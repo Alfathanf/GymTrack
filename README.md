@@ -32,9 +32,3 @@ cd frontend
 npm install
 npm run dev
 ```
-
-Notes:
-- This scaffold includes example controllers and routes. You'll need to provision a Supabase project and set the credentials in `backend/.env`.
-- Tailwind and PWA support are included as minimal config; run `npm install` in `frontend` to add dependencies. See comments in files for further guidance.
-
-Enjoy — ask me to run tests, wire up Supabase schema SQL, or add auth next.
