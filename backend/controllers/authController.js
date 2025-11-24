@@ -49,7 +49,7 @@ exports.register = async (req, res) => {
 
   const created = data[0]
   const token = jwt.sign({ id: created.id, email: created.email, name: created.name }, JWT_SECRET || 'dev-secret', { expiresIn: '12h' })
-  res.status(201).json({ token, user: { id: created.id, email: created.email, name: created.name } })
+  res.status(201).json({ token, user: { id: created.id, email: created.email, name: created.name, height: created.height, weight: created.weight  } })
 }
 
 // Optional: get current user from token (requires authMiddleware)

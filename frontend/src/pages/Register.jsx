@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom'
 
 export default function Login() {
   const [name, setName] = useState('')
+  const [height, setHeight] = useState('')
+  const [weight, setWeight] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -16,7 +18,7 @@ export default function Login() {
       const res = await fetch('http://localhost:3000/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name,email, password })
+        body: JSON.stringify({ name, email, password, height, weight })
       })
 
       const data = await res.json()
@@ -61,6 +63,32 @@ export default function Login() {
             onChange={(e) => setName(e.target.value)}
             required
           />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="name" className="block text-gray-700 font-medium mb-1">
+            Tinggi Badan (cm)
+          </label>
+          <input 
+          type="number" 
+          name="height" 
+          id="height"
+          className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring focus:ring-teal-300"
+            value={height}
+            onChange={(e) => setHeight(e.target.value)} />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="name" className="block text-gray-700 font-medium mb-1">
+            Berat Badan (kg)
+          </label>
+          <input 
+          type="number" 
+          name="weight" 
+          id="weight"
+          className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring focus:ring-teal-300"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)} />
         </div>
 
         <div className="mb-4">

@@ -9,11 +9,17 @@ export default function Tracking(){
   const navigate = useNavigate()
 
   useEffect(()=>{
-    // For example simplicity, we could fetch all exercises (or a user's exercises)
-    // Here we attempt to fetch sessions then their exercises; in real app we'd fetch user's exercises directly
-    api.getPrograms().then(()=>{
-      // placeholder - backend should provide endpoint for user exercises
-    }).catch(()=>{})
+    // Fetch all exercises belonging to logged-in user
+    async function load(){
+      try{
+        const ex = await api.getExercises()
+        setExercises(ex || [])
+      }catch(err){
+        console.error(err)
+        setExercises([])
+      }
+    }
+    load()
   }, [])
 
   return (
