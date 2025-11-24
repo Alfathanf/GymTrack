@@ -1,3 +1,5 @@
+// import authRoutes from "./routes/auth.js";
+
 const express = require('express')
 const cors = require('cors')
 const dotenv = require('dotenv')
@@ -15,6 +17,7 @@ app.use('/api/programs', require('./routes/programs'))
 app.use('/api/sessions', require('./routes/sessions'))
 app.use('/api/exercises', require('./routes/exercises'))
 app.use('/api/tracking', require('./routes/trackings'))
+app.use("/api/auth", require('./routes/auth.js'));
 
 // Basic health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))

@@ -2,14 +2,15 @@ const { supabase } = require('../supabaseClient')
 
 // Controller functions for users table
 exports.getAllUsers = async (req, res) => {
-  const { data, error } = await supabase.from('users').select('*')
+  // Select non-sensitive fields only
+  const { data, error } = await supabase.from('users').select('id,name,email,height,weight')
   if (error) return res.status(500).json({ error: error.message })
   res.json(data)
 }
 
 exports.getUserById = async (req, res) => {
   const { id } = req.params
-  const { data, error } = await supabase.from('users').select('*').eq('id', id).single()
+  const { data, error } = await supabase.from('users').select('id,name,email,height,weight').eq('id', id).single()
   if (error) return res.status(404).json({ error: error.message })
   res.json(data)
 }
