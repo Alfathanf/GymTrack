@@ -6,7 +6,7 @@ import { api } from '../api/api'
 export default function Tracking() {
   const [exercises, setExercises] = useState([])
   const navigate = useNavigate()
-  // const [newExerciseName, setNewExerciseName] = useState('')
+  const [newExerciseName, setNewExerciseName] = useState('')
 
   async function loadExercises() {
     try {
@@ -22,25 +22,25 @@ export default function Tracking() {
     loadExercises()
   }, [])
 
-  // async function handleCreateExercise(e) {
-  //   e.preventDefault()
-  //   if (!newExerciseName.trim()) return
-  //   try {
-  //     const res = await api.createExercise({ exercise_name: newExerciseName })
-  //     const created = res.data || res
-  //     setExercises(prev => [created, ...prev])
-  //     setNewExerciseName('')
-  //   } catch (err) {
-  //     console.error(err)
-  //     alert('Failed to create Exercise')
-  //   }
-  // }
+  async function handleCreateExercise(e) {
+    e.preventDefault()
+    if (!newExerciseName.trim()) return
+    try {
+      const res = await api.createExercise({ exercise_name: newExerciseName })
+      const created = res.data || res
+      setExercises(prev => [created, ...prev])
+      setNewExerciseName('')
+    } catch (err) {
+      console.error(err)
+      alert('Failed to create Exercise')
+    }
+  }
 
   return (
     <div>
       <h2 className="text-lg font-semibold mb-3">Tracking</h2>
 
-      {/* <form onSubmit={handleCreateExercise} className="mb-4">
+      <form onSubmit={handleCreateExercise} className="mb-4">
         <input
           value={newExerciseName}
           onChange={e => setNewExerciseName(e.target.value)}
@@ -50,7 +50,7 @@ export default function Tracking() {
         <button className="bg-teal-600 text-white px-3 py-2 rounded">
           Add Exercise
         </button>
-      </form> */}
+      </form>
 
       {exercises.length === 0 ? (
         <p className="text-gray-500">No tracked exercises yet.</p>

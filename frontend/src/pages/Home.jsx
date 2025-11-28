@@ -36,23 +36,14 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <h2 className="text-lg font-semibold mb-3">Today's Session</h2>
 
-      {restDay ? (
-        <Card>
-          <p className="text-gray-600 text-center py-4">
-            😴 It's your Rest Day! No active session today.
-          </p>
-        </Card>
-      ) : !session ? (
-        <p className="text-gray-500">No session found for today.</p>
+      { !session ? (
+        <p className="text-gray-500">It's your Rest Day! No active session today...</p>
       ) : (
         <Card>
           <div className="mb-3">
-            <div className="font-semibold text-teal-700">{session.day_of_week}</div>
-            {session.is_active ? (
-              <div className="text-sm text-green-600">Active Session</div>
-            ) : (
-              <div className="text-sm text-gray-500">Inactive</div>
-            )}
+            <div className="font-semibold text-teal-1000">{session.session_name}</div>
+              <div className="text-sm text-green-600">{session.day_of_week}</div>
+              <div className="text-sm text-green-500">Active Session</div>
           </div>
 
           {session.exercises.length === 0 ? (

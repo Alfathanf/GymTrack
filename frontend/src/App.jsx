@@ -32,10 +32,10 @@ export default function App() {
   }, [location])
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col overflow-y-auto">
+    <div className="app-container">
       {/* Header hanya muncul jika sudah login */}
       {token && (
-        <header className="bg-white shadow-sm p-4">
+        <header className="app-header">
           <div className="container">
             <Link to="/" className="text-xl font-semibold text-teal-600">
               GymTrack
@@ -44,55 +44,54 @@ export default function App() {
         </header>
       )}
 
-      <main className="flex-1 container p-4 overflow-y-auto">
-        <Routes>
-          {/* Halaman login & register tidak butuh proteksi */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+      <main className="app-main">
+  <Routes>
+    <Route path="/login" element={<Login />} />
+    <Route path="/register" element={<Register />} />
 
-          {/* Halaman yang butuh login */}
-          <Route
-            path="/"
-            element={
-              <RequireAuth>
-                <Home />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/session/:id"
-            element={
-              <RequireAuth>
-                <SessionDetail />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/tracking"
-            element={
-              <RequireAuth>
-                <Tracking />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/tracking/:exerciseId"
-            element={
-              <RequireAuth>
-                <TrackingDetail />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <RequireAuth>
-                <Profile />
-              </RequireAuth>
-            }
-          />
-        </Routes>
-      </main>
+    <Route
+      path="/"
+      element={
+        <RequireAuth>
+          <Home />
+        </RequireAuth>
+      }
+    />
+    <Route
+      path="/session/:id"
+      element={
+        <RequireAuth>
+          <SessionDetail />
+        </RequireAuth>
+      }
+    />
+    <Route
+      path="/tracking"
+      element={
+        <RequireAuth>
+          <Tracking />
+        </RequireAuth>
+      }
+    />
+    <Route
+      path="/tracking/:exerciseId"
+      element={
+        <RequireAuth>
+          <TrackingDetail />
+        </RequireAuth>
+      }
+    />
+    <Route
+      path="/profile"
+      element={
+        <RequireAuth>
+          <Profile />
+        </RequireAuth>
+      }
+    />
+  </Routes>
+</main>
+
 
       {/* BottomNav hanya muncul jika user sudah login */}
       {token && <BottomNav />}

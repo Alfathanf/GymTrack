@@ -78,6 +78,17 @@ createExercise: (payload) =>
 
 getExercises: () => request('/api/exercises'),
 
+// session_exercises
+addSessionExercise: (payload) =>
+  request('/api/session_exercises', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
+  
+deleteSessionExercise: (id) =>
+  request(`/api/session_exercises/${id}`, { method: 'DELETE' }),
+
+
 }
 
 export default api
