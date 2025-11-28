@@ -53,7 +53,7 @@ exports.getById = async (req, res) => {
     // Fetch exercises for this session
     const { data: exercises, error: exErr } = await supabase
       .from('session_exercises')
-      .select('*, exercises(id, exercise_name, muscle_group)')
+      .select('*, exercises(id, exercise_name)')
       .eq('session_id', id)
 
     if (exErr) console.error(exErr)

@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import Card from '../components/Card'
 import { api } from '../api/api'
+import { useNavigate } from 'react-router-dom'
 
 // Profile — shows user profile and programs; allows editing and creating programs
 export default function Profile(){
@@ -8,6 +9,7 @@ export default function Profile(){
   const [sessions, setSessions] = useState([])
   const [editingSessionId, setEditingSessionId] = useState(null)
   const [newSessionName, setNewSessionName] = useState('')
+  const navigate = useNavigate()
   const [profileForm, setProfileForm] = useState({ email: '', height: '', weight: '' })
 
   async function loadData(){
@@ -17,7 +19,7 @@ export default function Profile(){
       setUser(u)
       setProfileForm({ email: u?.email || '', height: u?.height || '', weight: u?.weight || '' })
       const resSessions = await api.getSessions()
-setSessions(resSessions?.data || [])
+      setSessions(resSessions?.data || [])
 
     } catch (err) {
       console.error(err)
@@ -105,11 +107,10 @@ setSessions(resSessions?.data || [])
           <div className="text-sm text-gray-500">{s.is_active ? 'Active' : 'Inactive'}</div>
         </div>
         <div>
-          <button
+          <button key={s.id} onClick={() => navigate(`/session/${s.id}`)}
             className="mr-2 text-sm text-blue-600"
-            onClick={() => setEditingSessionId(s.id)}
           >
-            Edit
+            Detail
           </button>
         </div>
       </div>
