@@ -100,6 +100,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gray-50">
       <h2 className="text-lg font-semibold mb-3">Profile</h2>
+      
 
       {/* Profile Card */}
       {user ? (
