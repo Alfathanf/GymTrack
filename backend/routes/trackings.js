@@ -1,13 +1,21 @@
 const express = require('express')
 const router = express.Router()
-const trackings = require('../controllers/trackingsController')
-const { authMiddleware } = require('../middleware/authMiddleware')
+const trackingsController = require('../controllers/trackingsController')
+const { authenticateToken } = require('../middleware/authMiddleware')
 
-// GET /api/tracking/                        -> all trackings for user
-// GET /api/tracking/exercise/:exerciseId   -> history for a specific exercise
-router.get('/', authMiddleware, trackings.getAllTrackings)
-router.get('/exercise/:exerciseId', authMiddleware, trackings.getTrackingByExercise)
-router.post('/', authMiddleware, trackings.createTracking)
-router.delete('/:id', authMiddleware, trackings.deleteTracking)
+// GET all trackings for user's exercises
+router.get('/', authenticateToken, trackingsController.getAll)
+
+// GET single tracking
+router.get('/:id', authenticateToken, trackingsController.getByExerciseId)
+
+// POST create tracking
+router.post('/', authenticateToken, trackingsController.create)
+
+// PUT update tracking
+router.put('/:id', authenticateToken, trackingsController.update)
+
+// DELETE tracking
+router.delete('/:id', authenticateToken, trackingsController.delete)
 
 module.exports = router

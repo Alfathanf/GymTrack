@@ -32,7 +32,7 @@ export default function App() {
   }, [location])
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col overflow-y-auto">
       {/* Header hanya muncul jika sudah login */}
       {token && (
         <header className="bg-white shadow-sm p-4">
@@ -44,7 +44,7 @@ export default function App() {
         </header>
       )}
 
-      <main className="flex-1 container p-4">
+      <main className="flex-1 container p-4 overflow-y-auto">
         <Routes>
           {/* Halaman login & register tidak butuh proteksi */}
           <Route path="/login" element={<Login />} />

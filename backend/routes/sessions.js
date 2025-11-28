@@ -1,12 +1,24 @@
 const express = require('express')
 const router = express.Router()
-const sessions = require('../controllers/sessionsController')
-const { authMiddleware } = require('../middleware/authMiddleware')
+const sessionsController = require('../controllers/sessionsController')
+const { authenticateToken } = require('../middleware/authMiddleware')
 
-// GET /api/sessions?program_id=...  (returns sessions only for logged-in user's programs)
-router.get('/', authMiddleware, sessions.getSessions)
-router.post('/', authMiddleware, sessions.createSession)
-router.put('/:id', authMiddleware, sessions.updateSession)
-router.delete('/:id', authMiddleware, sessions.deleteSession)
+
+router.get('/today', authenticateToken, sessionsController.getToday)
+
+// GET all sessions for logged-in user
+router.get('/', authenticateToken, sessionsController.getAll)
+
+// GET single session
+router.get('/:id', authenticateToken, sessionsController.getById)
+
+// POST create session
+router.post('/', authenticateToken, sessionsController.create)
+
+// PUT update session
+router.put('/:id', authenticateToken, sessionsController.update)
+
+// DELETE session
+router.delete('/:id', authenticateToken, sessionsController.delete)
 
 module.exports = router

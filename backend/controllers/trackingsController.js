@@ -1,74 +1,178 @@
 const { supabase } = require('../supabaseClient')
 
-// helper: verify exercise belongs to user's programs
-async function exerciseBelongsToUser(exerciseId, userId) {
-  const { data: ex, error } = await supabase.from('exercises').select('session_id').eq('id', exerciseId).single()
-  if (error || !ex) return false
-  const { data: session } = await supabase.from('sessions').select('program_id').eq('id', ex.session_id).single()
-  if (!session) return false
-  const { data: program } = await supabase.from('programs').select('user_id').eq('id', session.program_id).single()
-  if (!program) return false
-  return program.user_id === userId
+// GET all trackings for user's exercises
+exports.getAll = async (req, res) => {
+  try {
+    const userId = req.user?.id
+    if (!userId) return res.status(401).json({ success: false, error: 'Unauthorized' })
+
+    // Get all exercise IDs belonging to user
+    const { data: exercises } = await supabase
+      .from('exercises')
+      .select('id')
+      .eq('user_id', userId)
+
+    const exerciseIds = exercises ? exercises.map(e => e.id) : []
+
+    if (!exerciseIds.length) {
+      return res.json({ success: true, data: [] })
+    }
+
+    // Get trackings for these exercises
+    const { data, error } = await supabase
+      .from('trackings')
+      .select('*, exercises(id, exercise_name)')
+      .in('exercise_id', exerciseIds)
+
+    if (error) return res.status(500).json({ success: false, error: error.message })
+    return res.json({ success: true, data })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
 }
 
-// Create a tracking record owned by the user's exercise
-exports.createTracking = async (req, res) => {
-  const userId = req.user && req.user.id
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' })
-  const { exercise_id } = req.body
-  if (!exercise_id) return res.status(400).json({ error: 'exercise_id required' })
-  const ok = await exerciseBelongsToUser(exercise_id, userId)
-  if (!ok) return res.status(403).json({ error: 'Forbidden' })
+// GET all trackings for a given exercise_id (only for the logged-in user)
+exports.getByExerciseId = async (req, res) => {
+  try {
+    const { id: exerciseId } = req.params
+    const userId = req.user?.id
 
-  const payload = req.body
-  const { data, error } = await supabase.from('trackings').insert(payload).select()
-  if (error) return res.status(500).json({ error: error.message })
-  res.status(201).json(data[0])
+    // Ambil tracking berdasarkan exercise_id
+    const { data, error } = await supabase
+      .from('trackings')
+      .select('*, exercises(id, exercise_name, user_id)')
+      .eq('exercise_id', exerciseId)
+      .order('date', { ascending: false }) // urutkan biar terbaru duluan
+
+    if (error) throw error
+    if (!data || data.length === 0) {
+      return res.status(404).json({ success: false, error: 'No tracking found for this exercise' })
+    }
+
+    // Pastikan exercise milik user
+    const exerciseOwnerId = data[0].exercises?.user_id
+    if (String(exerciseOwnerId) !== String(userId)) {
+      return res.status(403).json({ success: false, error: 'Forbidden' })
+    }
+
+    return res.json({ success: true, data })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
 }
 
-// Get history for an exercise (only if it belongs to user)
-exports.getTrackingByExercise = async (req, res) => {
-  const userId = req.user && req.user.id
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' })
-  const { exerciseId } = req.params
-  const ok = await exerciseBelongsToUser(exerciseId, userId)
-  if (!ok) return res.status(403).json({ error: 'Forbidden' })
 
-  const { data, error } = await supabase.from('trackings').select('*').eq('exercise_id', exerciseId).order('date', { ascending: true })
-  if (error) return res.status(500).json({ error: error.message })
-  res.json(data)
+// POST create tracking
+exports.create = async (req, res) => {
+  try {
+    const userId = req.user?.id
+    const { exercise_id, weight, sets, reps, date, notes } = req.body
+
+    if (!exercise_id) {
+      return res.status(400).json({ success: false, error: 'exercise_id is required' })
+    }
+
+    // Verify exercise belongs to user
+    const { data: exercise, error: eErr } = await supabase
+      .from('exercises')
+      .select('user_id')
+      .eq('id', exercise_id)
+      .single()
+
+    if (eErr || !exercise) {
+      return res.status(404).json({ success: false, error: 'Exercise not found' })
+    }
+
+    if (String(exercise.user_id) !== String(userId)) {
+      return res.status(403).json({ success: false, error: 'Forbidden: exercise does not belong to user' })
+    }
+
+    // Create tracking
+    const { data, error } = await supabase
+      .from('trackings')
+      .insert({ exercise_id, weight, sets, reps, date, notes })
+      .select('*, exercises(id, exercise_name)')
+
+    if (error) return res.status(400).json({ success: false, error: error.message })
+    return res.status(201).json({ success: true, data: data[0] })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
 }
 
-// Get all trackings for user's exercises
-exports.getAllTrackings = async (req, res) => {
-  const userId = req.user && req.user.id
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' })
+// PUT update tracking (only own)
+exports.update = async (req, res) => {
+  try {
+    const { id } = req.params
+    const userId = req.user?.id
+    const { weight, sets, reps, date, notes } = req.body
 
-  // get user's exercises
-  const { data: programs } = await supabase.from('programs').select('id').eq('user_id', userId)
-  const pIds = programs.map(p => p.id)
-  const { data: sessions } = await supabase.from('sessions').select('id').in('program_id', pIds)
-  const sIds = sessions.map(s => s.id)
-  const { data: exercises } = await supabase.from('exercises').select('id').in('session_id', sIds)
-  const eIds = exercises.map(e => e.id)
+    // Get tracking and verify ownership
+    const { data: tracking, error: tErr } = await supabase
+      .from('trackings')
+      .select('exercise_id')
+      .eq('id', id)
+      .single()
 
-  const { data, error } = await supabase.from('trackings').select('*').in('exercise_id', eIds)
-  if (error) return res.status(500).json({ error: error.message })
-  res.json(data)
+    if (tErr || !tracking) {
+      return res.status(404).json({ success: false, error: 'Tracking not found' })
+    }
+
+    const { data: exercise, error: eErr } = await supabase
+      .from('exercises')
+      .select('user_id')
+      .eq('id', tracking.exercise_id)
+      .single()
+
+    if (eErr || !exercise || String(exercise.user_id) !== String(userId)) {
+      return res.status(403).json({ success: false, error: 'Forbidden' })
+    }
+
+    const { data, error } = await supabase
+      .from('trackings')
+      .update({ weight, sets, reps, date, notes })
+      .eq('id', id)
+      .select('*, exercises(id, exercise_name)')
+
+    if (error) return res.status(500).json({ success: false, error: error.message })
+    return res.json({ success: true, data: data[0] })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
 }
 
-exports.deleteTracking = async (req, res) => {
-  const userId = req.user && req.user.id
-  const { id } = req.params
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' })
+// DELETE tracking (only own)
+exports.delete = async (req, res) => {
+  try {
+    const { id } = req.params
+    const userId = req.user?.id
 
-  // ensure the tracking belongs to user's exercise
-  const { data: tracking, error: tErr } = await supabase.from('trackings').select('exercise_id').eq('id', id).single()
-  if (tErr || !tracking) return res.status(404).json({ error: 'Tracking not found' })
-  const ok = await exerciseBelongsToUser(tracking.exercise_id, userId)
-  if (!ok) return res.status(403).json({ error: 'Forbidden' })
+    // Get tracking and verify ownership
+    const { data: tracking, error: tErr } = await supabase
+      .from('trackings')
+      .select('exercise_id')
+      .eq('id', id)
+      .single()
 
-  const { error } = await supabase.from('trackings').delete().eq('id', id)
-  if (error) return res.status(500).json({ error: error.message })
-  res.status(204).end()
+    if (tErr || !tracking) {
+      return res.status(404).json({ success: false, error: 'Tracking not found' })
+    }
+
+    const { data: exercise, error: eErr } = await supabase
+      .from('exercises')
+      .select('user_id')
+      .eq('id', tracking.exercise_id)
+      .single()
+
+    if (eErr || !exercise || String(exercise.user_id) !== String(userId)) {
+      return res.status(403).json({ success: false, error: 'Forbidden' })
+    }
+
+    const { error } = await supabase.from('trackings').delete().eq('id', id)
+
+    if (error) return res.status(500).json({ success: false, error: error.message })
+    return res.status(204).end()
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
 }

@@ -36,22 +36,23 @@ export const api = {
   updateUser: (id, payload) => request(`/api/users/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
 
   // programs (backend uses token to scope user)
-  getPrograms: () => request('/api/programs'),
-  createProgram: (payload) => request('/api/programs', { method: 'POST', body: JSON.stringify(payload) }),
-  updateProgram: (id, payload) => request(`/api/programs/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  // getPrograms: () => request('/api/programs'),
+  // createProgram: (payload) => request('/api/programs', { method: 'POST', body: JSON.stringify(payload) }),
+  // updateProgram: (id, payload) => request(`/api/programs/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
 
   // sessions
-  getSessions: (programId) => request(`/api/sessions${programId ? `?program_id=${programId}` : ''}`),
+  getSessions: () => request(`/api/sessions`),
+  getTodaySession: () => request(`/api/sessions/today`),
   createSession: (payload) => request('/api/sessions', { method: 'POST', body: JSON.stringify(payload) }),
 
   // exercises
-  getExercises: (sessionId) => request(`/api/exercises${sessionId ? `?session_id=${sessionId}` : ''}`),
+  getExercises: (sessionId) => request('/api/exercises'),
   createExercise: (payload) => request('/api/exercises', { method: 'POST', body: JSON.stringify(payload) }),
   updateExercise: (id, payload) => request(`/api/exercises/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
 
   // trackings
   createTracking: (payload) => request('/api/tracking', { method: 'POST', body: JSON.stringify(payload) }),
-  getTrackingByExercise: (exerciseId) => request(`/api/tracking/exercise/${exerciseId}`),
+  getTrackingByExercise: (exerciseId) => request(`/api/tracking/${exerciseId}`),
   getAllTrackings: () => request('/api/tracking')
 }
 

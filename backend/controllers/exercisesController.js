@@ -1,81 +1,129 @@
 const { supabase } = require('../supabaseClient')
 
-// Helper: verify session -> program belongs to user
-async function sessionBelongsToUser(sessionId, userId) {
-  const { data, error } = await supabase.from('sessions').select('program_id').eq('id', sessionId).single()
-  if (error || !data) return false
-  const { data: program } = await supabase.from('programs').select('user_id').eq('id', data.program_id).single()
-  if (!program) return false
-  return program.user_id === userId
-}
+// GET all exercises for logged-in user
+exports.getAll = async (req, res) => {
+  try {
+    const userId = req.user?.id
+    if (!userId) return res.status(401).json({ success: false, error: 'Unauthorized' })
 
-exports.getExercises = async (req, res) => {
-  const userId = req.user && req.user.id
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' })
+    const { data, error } = await supabase
+      .from('exercises')
+      .select('*')
+      .eq('user_id', userId)
 
-  const { session_id } = req.query
-  if (session_id) {
-    const ok = await sessionBelongsToUser(session_id, userId)
-    if (!ok) return res.status(403).json({ error: 'Forbidden' })
-    const { data, error } = await supabase.from('exercises').select('*').eq('session_id', session_id)
-    if (error) return res.status(500).json({ error: error.message })
-    return res.json(data)
+    if (error) return res.status(500).json({ success: false, error: error.message })
+    return res.json({ success: true, data })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
   }
-
-  // Get all exercises belonging to user's programs
-  const { data: programs, error: pErr } = await supabase.from('programs').select('id').eq('user_id', userId)
-  if (pErr) return res.status(500).json({ error: pErr.message })
-  const pIds = programs.map(p => p.id)
-  // Find sessions in these programs
-  const { data: sessions, error: sErr } = await supabase.from('sessions').select('id').in('program_id', pIds)
-  if (sErr) return res.status(500).json({ error: sErr.message })
-  const sIds = sessions.map(s => s.id)
-  const { data, error } = await supabase.from('exercises').select('*').in('session_id', sIds)
-  if (error) return res.status(500).json({ error: error.message })
-  res.json(data)
 }
 
-exports.createExercise = async (req, res) => {
-  const userId = req.user && req.user.id
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' })
-  const { session_id } = req.body
-  if (!session_id) return res.status(400).json({ error: 'session_id is required' })
-  const ok = await sessionBelongsToUser(session_id, userId)
-  if (!ok) return res.status(403).json({ error: 'Forbidden' })
+// GET single exercise by ID (only own)
+exports.getById = async (req, res) => {
+  try {
+    const { id } = req.params
+    const userId = req.user?.id
 
-  const payload = req.body
-  const { data, error } = await supabase.from('exercises').insert(payload).select()
-  if (error) return res.status(500).json({ error: error.message })
-  res.status(201).json(data[0])
+    const { data, error } = await supabase
+      .from('exercises')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single()
+
+    if (error || !data) {
+      return res.status(404).json({ success: false, error: 'Exercise not found' })
+    }
+
+    return res.json({ success: true, data })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
 }
 
-exports.updateExercise = async (req, res) => {
-  const userId = req.user && req.user.id
-  const { id } = req.params
-  const payload = req.body
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' })
+// POST create exercise
+exports.create = async (req, res) => {
+  try {
+    const userId = req.user?.id
+    const { exercise_name } = req.body
 
-  const { data: exercise, error: eErr } = await supabase.from('exercises').select('session_id').eq('id', id).single()
-  if (eErr || !exercise) return res.status(404).json({ error: 'Exercise not found' })
-  const ok = await sessionBelongsToUser(exercise.session_id, userId)
-  if (!ok) return res.status(403).json({ error: 'Forbidden' })
+    if (!exercise_name) {
+      return res.status(400).json({ success: false, error: 'exercise_name is required' })
+    }
 
-  const { data, error } = await supabase.from('exercises').update(payload).eq('id', id).select()
-  if (error) return res.status(500).json({ error: error.message })
-  res.json(data[0])
+    const { data, error } = await supabase
+      .from('exercises')
+      .insert({ user_id: userId, exercise_name, })
+      .select()
+
+    if (error) return res.status(400).json({ success: false, error: error.message })
+    return res.status(201).json({ success: true, data: data[0] })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
 }
 
-exports.deleteExercise = async (req, res) => {
-  const userId = req.user && req.user.id
-  const { id } = req.params
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' })
+// PUT update exercise (only own)
+exports.update = async (req, res) => {
+  try {
+    const { id } = req.params
+    const userId = req.user?.id
+    const { exercise_name, muscle_group } = req.body
 
-  const { data: exercise, error: eErr } = await supabase.from('exercises').select('session_id').eq('id', id).single()
-  if (eErr || !exercise) return res.status(404).json({ error: 'Exercise not found' })
-  const ok = await sessionBelongsToUser(exercise.session_id, userId)
-  if (!ok) return res.status(403).json({ error: 'Forbidden' })
+    // Verify ownership
+    const { data: exercise, error: checkErr } = await supabase
+      .from('exercises')
+      .select('user_id')
+      .eq('id', id)
+      .single()
 
-  const { error } = await supabase.from('exercises').delete().eq('id', id)
-  if (error) return res.status(500).json({ error: error.message })
-  res.status(204).end()
+    if (checkErr || !exercise) {
+      return res.status(404).json({ success: false, error: 'Exercise not found' })
+    }
+
+    if (String(exercise.user_id) !== String(userId)) {
+      return res.status(403).json({ success: false, error: 'Forbidden' })
+    }
+
+    const { data, error } = await supabase
+      .from('exercises')
+      .update({ exercise_name, muscle_group })
+      .eq('id', id)
+      .select()
+
+    if (error) return res.status(500).json({ success: false, error: error.message })
+    return res.json({ success: true, data: data[0] })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+}
+
+// DELETE exercise (only own)
+exports.delete = async (req, res) => {
+  try {
+    const { id } = req.params
+    const userId = req.user?.id
+
+    // Verify ownership
+    const { data: exercise, error: checkErr } = await supabase
+      .from('exercises')
+      .select('user_id')
+      .eq('id', id)
+      .single()
+
+    if (checkErr || !exercise) {
+      return res.status(404).json({ success: false, error: 'Exercise not found' })
+    }
+
+    if (String(exercise.user_id) !== String(userId)) {
+      return res.status(403).json({ success: false, error: 'Forbidden' })
+    }
+
+    const { error } = await supabase.from('exercises').delete().eq('id', id)
+
+    if (error) return res.status(500).json({ success: false, error: error.message })
+    return res.status(204).end()
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
 }

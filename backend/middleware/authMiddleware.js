@@ -1,26 +1,23 @@
 const jwt = require('jsonwebtoken')
 
-const secret = process.env.JWT_SECRET
+const JWT_SECRET = process.env.JWT_SECRET
 
-if (!secret) {
-  throw new Error('JWT_SECRET is not set in environment variables')
-}
+// Middleware: authenticateToken — verifies Bearer token and sets req.user
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
 
-// authMiddleware checks for Bearer token and attaches payload to req.user
-function authMiddleware(req, res, next) {
-  const auth = req.headers.authorization
-  if (!auth || !auth.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Missing or invalid Authorization header' })
+  if (!token) {
+    return res.status(401).json({ success: false, error: 'Missing authorization token' })
   }
 
-  const token = auth.split(' ')[1]
   try {
-    const payload = jwt.verify(token, secret)
-    req.user = payload
+    const decoded = jwt.verify(token, JWT_SECRET || 'dev-secret')
+    req.user = decoded // { id, email, name }
     next()
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid or expired token' })
+    return res.status(403).json({ success: false, error: 'Invalid or expired token' })
   }
 }
 
-module.exports = { authMiddleware }
+module.exports = { authenticateToken }

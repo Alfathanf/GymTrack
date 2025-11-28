@@ -13,10 +13,11 @@ app.use(express.json())
 
 // Mount API routes
 app.use('/api/users', require('./routes/users'))
-app.use('/api/programs', require('./routes/programs'))
+// app.use('/api/programs', require('./routes/programs'))
 app.use('/api/sessions', require('./routes/sessions'))
 app.use('/api/exercises', require('./routes/exercises'))
 app.use('/api/tracking', require('./routes/trackings'))
+app.use('/api/session_exercises', require('./routes/session_exercises'))
 app.use("/api/auth", require('./routes/auth.js'));
 
 // Basic health check

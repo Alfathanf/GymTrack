@@ -12,8 +12,8 @@ export default function Tracking(){
     // Fetch all exercises belonging to logged-in user
     async function load(){
       try{
-        const ex = await api.getExercises()
-        setExercises(ex || [])
+        const resExercises = await api.getExercises()
+        setExercises(resExercises?.data || [])
       }catch(err){
         console.error(err)
         setExercises([])
@@ -31,7 +31,7 @@ export default function Tracking(){
         exercises.map(e => (
           <Card key={e.id} onClick={() => navigate(`/tracking/${e.id}`)}>
             <div className="font-medium">{e.exercise_name}</div>
-            <div className="text-sm text-gray-500">Last: {e.last_weight || '-'}</div>
+            {/* <div className="text-sm text-gray-500">Last: {e.last_weight || '-'}</div> */}
           </Card>
         ))
       )}
