@@ -1,12 +1,25 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import Card from '../components/Card'
 import { api } from '../api/api'
 
 export default function Tracking() {
+  const { id } = useParams()
   const [exercises, setExercises] = useState([])
   const navigate = useNavigate()
+    const [loading, setLoading] = useState(true)
   const [newExerciseName, setNewExerciseName] = useState('')
+
+  async function loadExercises() {
+      try {
+        const res = await api.getExercises
+        setExercises(res.data)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
 
   async function loadExercises() {
     try {
@@ -36,12 +49,12 @@ export default function Tracking() {
     }
   }
 
-   // 🔹 Hapus relasi exercise dari session
+   // 🔹 Hapus exercise 
     async function handleRemoveExercise(ExerciseId) {
-      if (!window.confirm('Remove this exercise from this session?')) return
+      if (!window.confirm('Remove this exercise?')) return
       try {
         await api.deleteExercise(ExerciseId)
-        await loadSession()
+        await loadExercises()
       } catch (err) {
         console.error(err)
         alert('Failed to remove exercise')
