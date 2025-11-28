@@ -1,5 +1,7 @@
 // src/api/api.js
 
+import { updateSession } from "../../../src/api/api"
+
 // Base URL API backend
 const BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000'
 
@@ -38,7 +40,7 @@ export const api = {
   // programs (backend uses token to scope user)
   // getPrograms: () => request('/api/programs'),
   // createProgram: (payload) => request('/api/programs', { method: 'POST', body: JSON.stringify(payload) }),
-  // updateProgram: (id, payload) => request(`/api/programs/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  updateSession: (id, payload) => request(`/api/sessions/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
 
   // sessions
   getSessions: () => request(`/api/sessions`),

@@ -11,6 +11,24 @@ export default function Profile() {
   const [newSession, setNewSession] = useState({ session_name: '', day_of_week: '', exercise_ids: [] })
   const [newExerciseName, setNewExerciseName] = useState('')
   const navigate = useNavigate()
+  // Urutan hari tetap
+  const dayOrder = [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday'
+  ] 
+
+// Urutkan sesi berdasarkan urutan hari
+const sortedSessions = [...sessions].sort((a, b) => {
+  const indexA = dayOrder.indexOf(a.day_of_week?.toLowerCase())
+  const indexB = dayOrder.indexOf(b.day_of_week?.toLowerCase())
+  return indexA - indexB
+})
+
 
   async function loadData() {
     try {
@@ -74,7 +92,7 @@ export default function Profile() {
       const res = await api.createSession({
         session_name: newSession.session_name,
         day_of_week: newSession.day_of_week,
-        is_active: true
+        is_active: false
       })
       const session = res.data || res
 
@@ -97,10 +115,37 @@ export default function Profile() {
     }
   }
 
+  // ✅ Toggle session per day — keep only one active per day
+  async function handleToggleActive(sessionId, currentState, dayOfWeek) {
+    try {
+      // 1️⃣ Matikan sesi lain di hari yang sama
+      const updatedSessions = await Promise.all(
+        sessions.map(async (s) => {
+          if (s.day_of_week === dayOfWeek && s.id !== sessionId && s.is_active) {
+            await api.updateSession(s.id, { is_active: false })
+            return { ...s, is_active: false }
+          }
+          return s
+        })
+      )
+
+      // 2️⃣ Toggle sesi yang ditekan
+      await api.updateSession(sessionId, { is_active: !currentState })
+
+      const newSessions = updatedSessions.map((s) =>
+        s.id === sessionId ? { ...s, is_active: !currentState } : s
+      )
+
+      setSessions(newSessions)
+    } catch (err) {
+      console.error(err)
+      alert('Failed to toggle session')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <h2 className="text-lg font-semibold mb-3">Profile</h2>
-      
 
       {/* Profile Card */}
       {user ? (
@@ -142,21 +187,26 @@ export default function Profile() {
 
       {/* Sessions List */}
       <h3 className="mt-6 font-semibold">Your Sessions</h3>
-      {sessions.map(s => (
+      {sortedSessions.map(s => (
+
         <Card key={s.id}>
           <div className="flex justify-between items-center">
-            <div>
+            <div onClick={() => navigate(`/session/${s.id}`)}>
               <div className="font-medium">{s.session_name}</div>
               <div className="text-sm text-gray-500 capitalize">
-                {s.day_of_week} — {s.is_active ? 'Active' : 'Inactive'}
+                {s.day_of_week}
               </div>
             </div>
-            <button
-              className="text-sm text-blue-600"
-              onClick={() => navigate(`/session/${s.id}`)}
-            >
-              Detail
-            </button>
+
+            {/* ⚡ Keep existing toggle design */}
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={!!s.is_active}
+                onChange={() => handleToggleActive(s.id, s.is_active, s.day_of_week)}
+              />
+              <span className="slider"></span>
+            </label>
           </div>
         </Card>
       ))}
@@ -183,11 +233,13 @@ export default function Profile() {
               onChange={e => setNewSession({ ...newSession, day_of_week: e.target.value })}
             >
               <option value="">Select day</option>
-              {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(d => (
-                <option key={d} value={d}>
-                  {d.charAt(0).toUpperCase() + d.slice(1)}
-                </option>
-              ))}
+              {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(
+                d => (
+                  <option key={d} value={d}>
+                    {d.charAt(0).toUpperCase() + d.slice(1)}
+                  </option>
+                )
+              )}
             </select>
           </div>
 

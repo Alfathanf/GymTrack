@@ -62,7 +62,7 @@ export default function TrackingDetail() {
             <thead>
               <tr className="border-b bg-gray-100 text-left">
                 <th className="py-2 px-3">Date</th>
-                <th className="py-2 px-3">Weight (kg)</th>
+                <th className="py-2 px-3">Weight</th>
                 <th className="py-2 px-3">Sets</th>
                 <th className="py-2 px-3">Reps</th>
               </tr>
@@ -71,7 +71,7 @@ export default function TrackingDetail() {
               {paginatedData.map((r, i) => (
                 <tr key={r.id || i} className="border-b hover:bg-gray-50">
                   <td className="py-2 px-3">{r.date}</td>
-                  <td className="py-2 px-3">{r.weight}</td>
+                  <td className="py-2 px-3">{r.weight} kg</td>
                   <td className="py-2 px-3">{r.sets}</td>
                   <td className="py-2 px-3">{r.reps}</td>
                 </tr>
