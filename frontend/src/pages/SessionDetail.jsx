@@ -38,7 +38,6 @@ export default function SessionDetail() {
         session.exercises.map((item) => (
           <Card key={item.id}>
             <div className="font-medium">{item.exercises.exercise_name}</div>
-            
           </Card>
         ))
       )}
