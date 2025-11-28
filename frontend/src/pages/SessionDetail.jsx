@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
+
 import Card from '../components/Card'
 import { api } from '../api/api'
 
 export default function SessionDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
   const [allExercises, setAllExercises] = useState([]) // semua exercise user
@@ -37,10 +39,10 @@ export default function SessionDetail() {
   }, [id])
 
   // 🔹 Hapus relasi exercise dari session
-  async function handleRemoveExercise(sessionExerciseId) {
+  async function handleRemoveExercise(SessionExerciseId) {
     if (!window.confirm('Remove this exercise from this session?')) return
     try {
-      await api.deleteSessionExercise(sessionExerciseId)
+      await api.deleteSessionExercise(SessionExerciseId)
       await loadSession()
     } catch (err) {
       console.error(err)
@@ -81,18 +83,24 @@ export default function SessionDetail() {
       {session.exercises?.length === 0 ? (
         <p className="text-gray-500">No exercises in this session.</p>
       ) : (
-        session.exercises.map((item) => (
-          <Card key={item.id} className="flex justify-between items-center">
-            <div className="font-medium">{item.exercises.exercise_name}</div>
+        session.exercises.map(e => (
+          <Card key={e.id} onClick={() => navigate(`/tracking/${e.exercises.id}`)} className="flex justify-between items-center">
+            <div className="flex justify-between items-center">      
+            <div className="font-medium">{e.exercises.exercise_name}</div>
             <button
-              onClick={() => handleRemoveExercise(item.id)}
-              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
-            >
-              Remove
-            </button>
+          onClick={(ev) => {
+            ev.stopPropagation(); // ⛔ mencegah event klik Card ikut jalan
+            handleRemoveExercise(e.id);
+          }}
+          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+        >
+          Remove
+        </button>
+        </div>
           </Card>
         ))
       )}
+      
 
       {/* 🔹 Form Tambah Exercise */}
       <Card className="mt-4">

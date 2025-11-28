@@ -52,6 +52,8 @@ export const api = {
   getExercises: (sessionId) => request('/api/exercises'),
   createExercise: (payload) => request('/api/exercises', { method: 'POST', body: JSON.stringify(payload) }),
   updateExercise: (id, payload) => request(`/api/exercises/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  deleteExercise: (id) =>
+  request(`/api/exercises/${id}`, { method: 'DELETE' }),
 
   // trackings
   createTracking: (payload) => request('/api/tracking', { method: 'POST', body: JSON.stringify(payload) }),

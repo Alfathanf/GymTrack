@@ -36,6 +36,18 @@ export default function Tracking() {
     }
   }
 
+   // 🔹 Hapus relasi exercise dari session
+    async function handleRemoveExercise(ExerciseId) {
+      if (!window.confirm('Remove this exercise from this session?')) return
+      try {
+        await api.deleteExercise(ExerciseId)
+        await loadSession()
+      } catch (err) {
+        console.error(err)
+        alert('Failed to remove exercise')
+      }
+    }
+
   return (
     <div>
       <h2 className="text-lg font-semibold mb-3">Tracking</h2>
@@ -53,14 +65,26 @@ export default function Tracking() {
       </form>
 
       {exercises.length === 0 ? (
-        <p className="text-gray-500">No tracked exercises yet.</p>
-      ) : (
-        exercises.map(e => (
-          <Card key={e.id} onClick={() => navigate(`/tracking/${e.id}`)}>
-            <div className="font-medium">{e.exercise_name}</div>
-          </Card>
-        ))
-      )}
+  <p className="text-gray-500">No tracked exercises yet.</p>
+) : (
+  exercises.map(e => (
+    <Card key={e.id} onClick={() => navigate(`/tracking/${e.id}`)}>
+      <div className="flex justify-between items-center">
+        <div className="font-medium">{e.exercise_name}</div>
+        <button
+          onClick={(ev) => {
+            ev.stopPropagation(); // ⛔ mencegah event klik Card ikut jalan
+            handleRemoveExercise(e.id);
+          }}
+          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+        >
+          Remove
+        </button>
+      </div>
+    </Card>
+  ))
+)}
+
     </div>
   )
 }
