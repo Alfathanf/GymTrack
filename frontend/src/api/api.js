@@ -44,7 +44,7 @@ export const api = {
   getSessions: () => request(`/api/sessions`),
   getTodaySession: () => request(`/api/sessions/today`),
   getDetailSession: (sessionId) => request(`/api/sessions/${sessionId}`),
-  createSession: (payload) => request('/api/sessions', { method: 'POST', body: JSON.stringify(payload) }),
+  // createSession: (payload) => request('/api/sessions', { method: 'POST', body: JSON.stringify(payload) }),
 
   // exercises
   getExercises: (sessionId) => request('/api/exercises'),
@@ -54,7 +54,28 @@ export const api = {
   // trackings
   createTracking: (payload) => request('/api/tracking', { method: 'POST', body: JSON.stringify(payload) }),
   getTrackingByExercise: (exerciseId) => request(`/api/tracking/${exerciseId}`),
-  getAllTrackings: () => request('/api/tracking')
+  getAllTrackings: () => request('/api/tracking'),
+
+  createSession: (payload) =>
+  request('/api/sessions', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
+
+addSessionExercise: (payload) =>
+  request('/api/session_exercises', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
+
+createExercise: (payload) =>
+  request('/api/exercises', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }),
+
+getExercises: () => request('/api/exercises'),
+
 }
 
 export default api
