@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import Card from '../components/Card'
-import Modal from '../components/NewSessionModal'
+import AddModal from '../components/NewSessionModal'
+import EditModal from '../components/EditProfileModal'
 import { api } from '../api/api'
 import { useNavigate } from 'react-router-dom'
 
 export default function Profile() {
   const [user, setUser] = useState(null)
   const [showModal, setShowModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [sessions, setSessions] = useState([])
   const [exercises, setExercises] = useState([])
   const [profileForm, setProfileForm] = useState({ email: '', height: '', weight: '' })
@@ -98,51 +100,60 @@ const sortedSessions = [...sessions].sort((a, b) => {
     }
   }
 
+  async function handleRemoveSession(SessionId) {
+        if (!window.confirm('Remove this session?')) return
+        try {
+          await api.deleteSession(SessionId)
+          await loadData()
+        } catch (err) {
+          console.error(err)
+          alert('Failed to remove session')
+        }
+      }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <h2 className="text-lg font-semibold mb-3">Profile</h2>
+      <h2 className="text-lg font-semibold mb-3">Your Profile</h2>
 
       {/* Profile Card */}
       {user ? (
         <Card>
-          <div className="font-medium">{user.name}</div>
-          <form onSubmit={handleProfileSave} className="mt-2">
-            <div className="mb-2">
-              <label className="block text-sm">Email</label>
-              <input
-                className="w-full p-2 border rounded"
-                value={profileForm.email}
-                onChange={e => setProfileForm({ ...profileForm, email: e.target.value })}
-              />
-            </div>
-            <div className="mb-2">
-              <label className="block text-sm">Height (cm)</label>
-              <input
-                className="w-full p-2 border rounded"
-                value={profileForm.height || ''}
-                onChange={e => setProfileForm({ ...profileForm, height: e.target.value })}
-              />
-            </div>
-            <div className="mb-2">
-              <label className="block text-sm">Weight (kg)</label>
-              <input
-                className="w-full p-2 border rounded"
-                value={profileForm.weight || ''}
-                onChange={e => setProfileForm({ ...profileForm, weight: e.target.value })}
-              />
-            </div>
-            <button type="submit" className="bg-teal-600 text-white px-4 py-2 rounded">
-              Save Profile
-            </button>
-          </form>
+      {user ? (
+        <Card>
+          <div className="bold">{user.name}</div>
+          <div className="text-sm text-gray-500">Height: {user.height} cm | Weight: {user.weight} kg</div>
+          <div className="text-gray-500">Email: {user.email}</div>
         </Card>
+      ) : (
+        <p className="text-gray-500">No user data. Create a user via the backend API.</p>
+      )}
+
+      {/* Tombol untuk membuka edit modal */}
+      <button
+        onClick={() => setShowEditModal(true)}
+        className="bg-teal-600 text-white px-4 py-2 rounded"
+      >
+        EditProfile
+      </button>
+
+      {/* Modal */}
+      <EditModal
+  show={showEditModal}
+  onClose={() => setShowEditModal(false)}
+  onUpdate={loadData}
+  user={user} // 🔹 kirim data user
+>
+
+      </EditModal>
+        </Card>
+        
       ) : (
         <p className="text-gray-500">No user data.</p>
       )}
 
       {/* Sessions List */}
       <div>
-        <h3 className="mt-6 font-semibold">Your Program:</h3>
+        <h2 className="text-lg font-semibold mb-3">Your Program</h2>
 {/* Tombol untuk membuka modal */}
       <button
         onClick={() => setShowModal(true)}
@@ -152,12 +163,12 @@ const sortedSessions = [...sessions].sort((a, b) => {
       </button>
 
       {/* Modal */}
-      <Modal
+      <AddModal
         show={showModal}
         onClose={() => setShowModal(false)}
-        title="Create a New Session"
+        onUpdate={loadData}
       >
-      </Modal>
+      </AddModal>
       </div>
       
       
@@ -170,6 +181,15 @@ const sortedSessions = [...sessions].sort((a, b) => {
               <div className="text-sm text-gray-500 capitalize">
                 {s.day_of_week}
               </div>
+              <button
+          onClick={(ev) => {
+            ev.stopPropagation(); // ⛔ mencegah event klik Card ikut jalan
+            handleRemoveSession(s.id);
+          }}
+          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+        >
+          Remove
+        </button>
             </div>
 
             {/* ⚡ Keep existing toggle design */}
@@ -184,83 +204,6 @@ const sortedSessions = [...sessions].sort((a, b) => {
           </div>
         </Card>
       ))}
-
-      {/* Create New Session */}
-      {/* <Card> */}
-        {/* <h3 className="font-semibold mb-2">Create New Session</h3>
-        <form onSubmit={handleCreateSession} className="space-y-2">
-          <div>
-            <label className="block text-sm">Session Name</label>
-            <input
-              value={newSession.session_name}
-              onChange={e => setNewSession({ ...newSession, session_name: e.target.value })}
-              className="w-full p-2 border rounded"
-              placeholder="e.g., Pull Day"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm">Day of Week</label>
-            <select
-              className="w-full p-2 border rounded"
-              value={newSession.day_of_week}
-              onChange={e => setNewSession({ ...newSession, day_of_week: e.target.value })}
-            >
-              <option value="">Select day</option>
-              {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(
-                d => (
-                  <option key={d} value={d}>
-                    {d.charAt(0).toUpperCase() + d.slice(1)}
-                  </option>
-                )
-              )}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm">Exercises</label>
-            <select
-              multiple
-              value={newSession.exercise_ids}
-              onChange={e =>
-                setNewSession({
-                  ...newSession,
-                  exercise_ids: Array.from(e.target.selectedOptions, o => o.value)
-                })
-              }
-              className="w-full p-2 border rounded"
-            >
-              {exercises.map(ex => (
-                <option key={ex.id} value={ex.id}>
-                  {ex.exercise_name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Inline Create Exercise 
-          <div className="flex gap-2 items-center">
-            <input
-              type="text"
-              placeholder="Add new exercise"
-              value={newExerciseName}
-              onChange={e => setNewExerciseName(e.target.value)}
-              className="p-2 border rounded flex-1"
-            />
-            <button
-              type="button"
-              onClick={handleCreateExerciseInline}
-              className="bg-blue-500 text-white px-3 py-2 rounded"
-            >
-              Add
-            </button>
-          </div>
-
-          <button className="bg-teal-600 text-white px-4 py-2 rounded w-full">
-            Create Session
-          </button>
-        </form>
-      </Card> */}
 
       {/* Logout */}
       <button

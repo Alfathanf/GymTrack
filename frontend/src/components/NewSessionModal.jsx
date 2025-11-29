@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { api } from '../api/api'
 
-export default function Modal({ show, onClose }) {
+export default function Modal({ show, onClose, onUpdate }) {
   const [exercises, setExercises] = useState([])
   const [newExerciseName, setNewExerciseName] = useState('')
   const [newSession, setNewSession] = useState({
@@ -65,6 +65,7 @@ export default function Modal({ show, onClose }) {
 
       setNewSession({ session_name: '', day_of_week: '', exercise_ids: [] })
       alert('Session created successfully!')
+      if (onUpdate) onUpdate()
       onClose() // tutup modal setelah sukses
     } catch (err) {
       console.error(err)

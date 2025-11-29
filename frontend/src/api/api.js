@@ -46,6 +46,8 @@ export const api = {
   getSessions: () => request(`/api/sessions`),
   getTodaySession: () => request(`/api/sessions/today`),
   getDetailSession: (sessionId) => request(`/api/sessions/${sessionId}`),
+  deleteSession: (id) =>
+  request(`/api/sessions/${id}`, { method: 'DELETE' }),
   // createSession: (payload) => request('/api/sessions', { method: 'POST', body: JSON.stringify(payload) }),
 
   // exercises
