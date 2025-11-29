@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import Card from '../components/Card'
+import Modal from '../components/NewSessionModal'
 import { api } from '../api/api'
 import { useNavigate } from 'react-router-dom'
 
 export default function Profile() {
   const [user, setUser] = useState(null)
+  const [showModal, setShowModal] = useState(false)
   const [sessions, setSessions] = useState([])
   const [exercises, setExercises] = useState([])
   const [profileForm, setProfileForm] = useState({ email: '', height: '', weight: '' })
@@ -65,53 +67,6 @@ const sortedSessions = [...sessions].sort((a, b) => {
     } catch (err) {
       console.error(err)
       alert('Failed to update profile')
-    }
-  }
-
-  async function handleCreateExerciseInline(e) {
-    e.preventDefault()
-    if (!newExerciseName.trim()) return
-    try {
-      const res = await api.createExercise({ exercise_name: newExerciseName })
-      const created = res.data || res
-      setExercises(prev => [...prev, created])
-      setNewExerciseName('')
-      alert('Exercise added!')
-    } catch (err) {
-      console.error(err)
-      alert('Failed to create exercise')
-    }
-  }
-
-  async function handleCreateSession(e) {
-    e.preventDefault()
-    if (!newSession.day_of_week || !newSession.session_name) {
-      return alert('Please enter session name and select day.')
-    }
-    try {
-      const res = await api.createSession({
-        session_name: newSession.session_name,
-        day_of_week: newSession.day_of_week,
-        is_active: false
-      })
-      const session = res.data || res
-
-      // Link exercises ke session baru
-      if (newSession.exercise_ids.length > 0) {
-        for (const exId of newSession.exercise_ids) {
-          await api.addSessionExercise({
-            session_id: session.id,
-            exercise_id: exId
-          })
-        }
-      }
-
-      setSessions(prev => [session, ...prev])
-      setNewSession({ session_name: '', day_of_week: '', exercise_ids: [] })
-      alert('Session created successfully!')
-    } catch (err) {
-      console.error(err)
-      alert('Failed to create session')
     }
   }
 
@@ -186,7 +141,26 @@ const sortedSessions = [...sessions].sort((a, b) => {
       )}
 
       {/* Sessions List */}
-      <h3 className="mt-6 font-semibold">Your Sessions</h3>
+      <div>
+        <h3 className="mt-6 font-semibold">Your Program:</h3>
+{/* Tombol untuk membuka modal */}
+      <button
+        onClick={() => setShowModal(true)}
+        className="bg-teal-600 text-white px-4 py-2 rounded"
+      >
+        Create a New Session
+      </button>
+
+      {/* Modal */}
+      <Modal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        title="Create a New Session"
+      >
+      </Modal>
+      </div>
+      
+      
       {sortedSessions.map(s => (
 
         <Card key={s.id}>
@@ -212,8 +186,8 @@ const sortedSessions = [...sessions].sort((a, b) => {
       ))}
 
       {/* Create New Session */}
-      <Card>
-        <h3 className="font-semibold mb-2">Create New Session</h3>
+      {/* <Card> */}
+        {/* <h3 className="font-semibold mb-2">Create New Session</h3>
         <form onSubmit={handleCreateSession} className="space-y-2">
           <div>
             <label className="block text-sm">Session Name</label>
@@ -264,7 +238,7 @@ const sortedSessions = [...sessions].sort((a, b) => {
             </select>
           </div>
 
-          {/* Inline Create Exercise */}
+          {/* Inline Create Exercise 
           <div className="flex gap-2 items-center">
             <input
               type="text"
@@ -286,7 +260,7 @@ const sortedSessions = [...sessions].sort((a, b) => {
             Create Session
           </button>
         </form>
-      </Card>
+      </Card> */}
 
       {/* Logout */}
       <button
