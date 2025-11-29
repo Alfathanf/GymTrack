@@ -37,7 +37,7 @@ export default function App() {
       {token && (
         <header className="app-header">
           <div className="container">
-            <Link to="/" className="text-xl font-semibold text-teal-600">
+            <Link to="/" className="heading-1 text-blue-600">
               GymTrack
             </Link>
           </div>

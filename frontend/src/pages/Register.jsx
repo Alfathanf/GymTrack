@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { UserPlus, Mail, Lock } from 'lucide-react'
 
-export default function Login() {
+export default function Register() {
   const [name, setName] = useState('')
   const [height, setHeight] = useState('')
   const [weight, setWeight] = useState('')
@@ -10,7 +11,7 @@ export default function Login() {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  const handleLogin = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault()
     setError('')
 
@@ -23,7 +24,7 @@ export default function Login() {
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || 'Login gagal')
+        throw new Error(data.error || 'Register gagal')
       }
 
       // Simpan token ke localStorage
@@ -38,101 +39,56 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white shadow-lg rounded-xl p-8 w-full max-w-sm"
-      >
-        <h2 className="text-2xl font-bold text-center text-teal-600 mb-6">Sign Up GymTrack</h2>
+    <div className="min-h-screen flex items-center justify-center">
+      <form onSubmit={handleRegister} className="card-strong p-8 w-full max-w-md">
+        <div className="flex flex-col items-center mb-6">
+          <div className="p-3 rounded-full" style={{ background: '#f5f5f5' }}>
+            <UserPlus color={'#007BFF'} />
+          </div>
+          <h2 className="heading-1 mt-3">Create Account</h2>
+          <div className="heading-2">Start Tracking Your Progress!</div>
+        </div>
 
         {error && (
-          <div className="bg-red-100 text-red-700 text-sm p-2 mb-4 rounded">
+          <div className="bg-red-800/50 text-red-200 text-sm p-2 mb-4 rounded">
             {error}
           </div>
         )}
 
-        <div className="mb-4">
-          <label htmlFor="name" className="block text-gray-700 font-medium mb-1">
-            Nama
-          </label>
-          <input
-            type="name"
-            id="name"
-            className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring focus:ring-teal-300"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
+        <div className="grid grid-cols-1 gap-3 mb-3">
+          <div className="form">
+            <label className="label">Name</label>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+          </div>
+        
+            <div className="form">
+              <label className="label">Height (cm)</label>
+              <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
+            </div>
+            
+            <div className="form">
+              <label className="label">Weight (kg)</label>
+              <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} />
+            </div>
 
-        <div className="mb-4">
-          <label htmlFor="name" className="block text-gray-700 font-medium mb-1">
-            Tinggi Badan (cm)
-          </label>
-          <input 
-          type="number" 
-          name="height" 
-          id="height"
-          className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring focus:ring-teal-300"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)} />
-        </div>
+          <div className="form">
+            <label className="label flex items-center gap-2"><Mail size={14} /> Email</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </div>
 
-        <div className="mb-4">
-          <label htmlFor="name" className="block text-gray-700 font-medium mb-1">
-            Berat Badan (kg)
-          </label>
-          <input 
-          type="number" 
-          name="weight" 
-          id="weight"
-          className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring focus:ring-teal-300"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)} />
-        </div>
-
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-gray-700 font-medium mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring focus:ring-teal-300"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label htmlFor="password" className="block text-gray-700 font-medium mb-1">
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring focus:ring-teal-300"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="form">
+            <label className="label flex items-center gap-2"><Lock size={14} /> Password</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          </div>
         </div>
 
         <div className="flex justify-between text-sm mb-4">
-          <a>
-            Sudah punya akun?
-          <Link to="/login" className="text-teal-600 hover:underline">
-            Log in
-          </Link>
-           </a>
+          <div className="text-muted-2">Already have an Account?</div>
+          <Link to="/login" className="accent hover:underline text-blue-600">Log in</Link>
         </div>
 
-        <button
-          type="submit"
-          className="bg-teal-600 text-white w-full py-2 rounded hover:bg-teal-700 transition"
-        >
-          Register
+        <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
+          <UserPlus size={16} /> Register
         </button>
       </form>
     </div>

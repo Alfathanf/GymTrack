@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
+import { Plus, Trash2, Edit3, Dumbbell, LogOut } from "lucide-react"
 import Card from '../components/Card'
 import AddModal from '../components/NewSessionModal'
 import EditModal from '../components/EditProfileModal'
-import { api } from '../api/api'
+import api from '../api/api'
 import { useNavigate } from 'react-router-dom'
 
 export default function Profile() {
@@ -37,19 +38,18 @@ const sortedSessions = [...sessions].sort((a, b) => {
   async function loadData() {
     try {
       const res = await api.getProfile()
-      const u = res.user
+      const u = res.user || res.data || res
       setUser(u)
       setProfileForm({
         email: u?.email || '',
         height: u?.height || '',
         weight: u?.weight || ''
       })
-
       const resSessions = await api.getSessions()
-      setSessions(resSessions?.data || [])
+      setSessions(resSessions?.data || resSessions || [])
 
       const resExercises = await api.getExercises()
-      setExercises(resExercises?.data || [])
+      setExercises(resExercises?.data || resExercises || [])
     } catch (err) {
       console.error(err)
     }
@@ -58,19 +58,6 @@ const sortedSessions = [...sessions].sort((a, b) => {
   useEffect(() => {
     loadData()
   }, [])
-
-  async function handleProfileSave(e) {
-    e.preventDefault()
-    if (!user) return
-    try {
-      const updated = await api.updateUser(user.id, profileForm)
-      setUser(updated)
-      alert('Profile updated')
-    } catch (err) {
-      console.error(err)
-      alert('Failed to update profile')
-    }
-  }
 
   // ✅ Toggle session per day — keep only one active per day
   async function handleToggleActive(sessionId, currentState, dayOfWeek) {
@@ -112,109 +99,78 @@ const sortedSessions = [...sessions].sort((a, b) => {
       }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <h2 className="text-lg font-semibold mb-3">Your Profile</h2>
+    <div className="min-h-screen p-4 container">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="heading-1">Your Profile</h2>
+          <div className="heading-2">Manage your profile and program</div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="btn-ghost" onClick={() => { localStorage.removeItem('token'); window.location.href = '/login' }}>
+            <LogOut size={16} color={'#007BFF'} /> 
+          </button>
+        </div>
+      </div>
 
       {/* Profile Card */}
       {user ? (
-        <Card>
-      {user ? (
-        <Card>
-          <div className="bold">{user.name}</div>
-          <div className="text-sm text-gray-500">Height: {user.height} cm | Weight: {user.weight} kg</div>
-          <div className="text-gray-500">Email: {user.email}</div>
+        <Card className="card">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="heading-2">{user.name}</div>
+              <div className="text-muted">Height: {user.height || '-'} cm • Weight: {user.weight || '-'} kg</div>
+              <div className="text-muted">{user.email}</div>
+            </div>
+            <div>
+              <button onClick={() => setShowEditModal(true)} className="btn-primary">
+                <Edit3 size={16} />
+              </button>
+            </div>
+          </div>
         </Card>
       ) : (
-        <p className="text-gray-500">No user data. Create a user via the backend API.</p>
+        <p className="text-muted">No user data.</p>
       )}
 
-      {/* Tombol untuk membuka edit modal */}
-      <button
-        onClick={() => setShowEditModal(true)}
-        className="bg-teal-600 text-white px-4 py-2 rounded"
-      >
-        EditProfile
-      </button>
-
-      {/* Modal */}
-      <EditModal
-  show={showEditModal}
-  onClose={() => setShowEditModal(false)}
-  onUpdate={loadData}
-  user={user} // 🔹 kirim data user
->
-
-      </EditModal>
-        </Card>
-        
-      ) : (
-        <p className="text-gray-500">No user data.</p>
-      )}
-
-      {/* Sessions List */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Your Program</h2>
-{/* Tombol untuk membuka modal */}
-      <button
-        onClick={() => setShowModal(true)}
-        className="bg-teal-600 text-white px-4 py-2 rounded"
-      >
-        Create a New Session
-      </button>
-
-      {/* Modal */}
-      <AddModal
-        show={showModal}
-        onClose={() => setShowModal(false)}
-        onUpdate={loadData}
-      >
-      </AddModal>
+      {/* Sessions List header */}
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="heading-1">Your Program</h3>
+        <button onClick={() => setShowModal(true)} className="btn-primary"><Plus size={14} /></button>
       </div>
-      
-      
-      {sortedSessions.map(s => (
 
-        <Card key={s.id}>
+      <AddModal show={showModal} onClose={() => setShowModal(false)} onUpdate={loadData} />
+      <EditModal show={showEditModal} onClose={() => setShowEditModal(false)} onUpdate={loadData} user={user} />
+
+      {sortedSessions.map(s => (
+        <Card key={s.id} onClick={() => navigate(`/session/${s.id}`)} className="p-4 mb-3 card-ghost">
           <div className="flex justify-between items-center">
-            <div onClick={() => navigate(`/session/${s.id}`)}>
+            <div>
               <div className="font-medium">{s.session_name}</div>
-              <div className="text-sm text-gray-500 capitalize">
-                {s.day_of_week}
-              </div>
-              <button
-          onClick={(ev) => {
-            ev.stopPropagation(); // ⛔ mencegah event klik Card ikut jalan
-            handleRemoveSession(s.id);
-          }}
-          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
-        >
-          Remove
-        </button>
+              <div className="text-muted capitalize">{s.day_of_week}</div>
             </div>
 
-            {/* ⚡ Keep existing toggle design */}
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={!!s.is_active}
-                onChange={() => handleToggleActive(s.id, s.is_active, s.day_of_week)}
-              />
-              <span className="slider"></span>
-            </label>
+            <div className="flex items-center gap-3">
+              <label className="switch" onClick={(ev) => ev.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={!!s.is_active}
+                  onChange={() => handleToggleActive(s.id, s.is_active, s.day_of_week)}
+                />
+                <span className="slider"></span>
+              </label>
+
+              <button
+                onClick={(ev) => { ev.stopPropagation(); handleRemoveSession(s.id); }}
+                className="btn-ghost"
+                title="Remove session"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
           </div>
         </Card>
       ))}
 
-      {/* Logout */}
-      <button
-        onClick={() => {
-          localStorage.removeItem('token')
-          window.location.href = '/login'
-        }}
-        className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
-      >
-        Logout
-      </button>
     </div>
   )
 }

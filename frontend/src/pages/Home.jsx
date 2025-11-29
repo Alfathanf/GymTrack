@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import Card from '../components/Card'
-import { api } from '../api/api'
+import api from '../api/api'
+import { useNavigate } from 'react-router-dom'
+import {  Dumbbell, ArrowRight } from 'lucide-react'
 
 export default function Home() {
   const [session, setSession] = useState(null)
   const [restDay, setRestDay] = useState(false)
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     async function loadTodaySession() {
       setLoading(true)
       try {
-        const res = await api.getTodaySession() // <— endpoint: /api/sessions/today
+        const res = await api.getTodaySession()
         if (res.restDay) {
           setRestDay(true)
           setSession(null)
@@ -30,36 +33,64 @@ export default function Home() {
     loadTodaySession()
   }, [])
 
-  if (loading) return <p>Loading...</p>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted">
+        Loading today's session...
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <h2 className="text-lg font-semibold mb-3">Today's Session</h2>
+    <div className="min-h-screen p-4 container">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="heading-1">Today's Session</h2>
+          <div className="heading-2">A quick overview of your active training</div>
+        </div>
+      </div>
 
-      { !session ? (
-        <p className="text-gray-500">It's your Rest Day! No active session today...</p>
-      ) : (
-        <Card>
-          <div className="mb-3">
-            <div className="font-semibold text-teal-1000">{session.session_name}</div>
-              <div className="text-sm text-green-600">{session.day_of_week}</div>
-              <div className="text-sm text-green-500">Active Session</div>
+      {!session || restDay ? (
+        <Card className="card">
+          <div className="flex flex-col items-start gap-3">
+            <div className="heading-2">It's a Rest Day...</div>
+            <div className="text-muted">No active session scheduled today...</div>
           </div>
+        </Card>
+      ) : (
+        <>
+          <Card className="card">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="heading-2">{session.session_name}</div>
+                <div className="text-accent">{session.day_of_week} • Active</div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-muted">{session.exercises?.length || 0} exercises</div>                
+              </div>
+            </div>
+          </Card>
 
-          {session.exercises.length === 0 ? (
-            <p className="text-gray-500">No exercises in this session.</p>
-          ) : (
-            <div className="space-y-3">
-              {session.exercises.map((item) => (
-                <div key={item.id} className="border-t pt-2">
-                  <div className="font-medium">
-                    {item.exercises.exercise_name}
+          <h3 className="heading-1 mt-6 mb-3">Exercises</h3>
+
+          {session?.exercises?.length > 0 ? (
+            session.exercises.map((item) => (
+              <Card key={item.id} onClick={() => navigate(`/tracking/${item.exercises.id}`)} className="mb-3 p-4 card-ghost">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="font-medium">{item.exercises.exercise_name}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-muted text-sm">Latest</span>
+                    <ArrowRight size={18} className="accent" />
                   </div>
                 </div>
-              ))}
-            </div>
+              </Card>
+            ))
+          ) : (
+            <p className="text-muted">No exercises in this session.</p>
           )}
-        </Card>
+        </>
       )}
     </div>
   )

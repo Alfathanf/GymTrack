@@ -31,8 +31,8 @@ export default function Modal({ show, onClose, onUpdate, user }) {
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-md relative">
+    <div className="modal-overlay">
+  <div className="modal-content">
         <button
           onClick={onClose}
           className="absolute top-2 right-3 text-gray-500 hover:text-gray-700 text-xl"

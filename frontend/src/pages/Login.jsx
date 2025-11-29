@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { LogIn, Mail, Lock } from 'lucide-react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -35,41 +36,40 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white shadow-lg rounded-xl p-8 w-full max-w-sm"
-      >
-        <h2 className="text-2xl font-bold text-center text-teal-600 mb-6">Login GymTrack</h2>
+    <div className="min-h-screen flex items-center justify-center">
+      <form onSubmit={handleLogin} className="card-strong p-8 w-full max-w-sm">
+        <div className="flex flex-col items-center mb-6">
+          <div className="p-3 rounded-full" style={{ background: '#f5f5f5' }}>
+            <LogIn color={'#007BFF'} />
+          </div>
+          <h2 className="heading-1 mt-3">Login to GymTrack</h2>
+          <div className="heading-2">Welcome Back!</div>
+        </div>
 
         {error && (
-          <div className="bg-red-100 text-red-700 text-sm p-2 mb-4 rounded">
+          <div className="bg-red-800/50 text-red-200 text-sm p-2 mb-4 rounded">
             {error}
           </div>
         )}
 
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-gray-700 font-medium mb-1">
-            Email
-          </label>
+        <div className="mb-4 form">
+          <label htmlFor="email" className="label flex items-center gap-2"><Mail size={16} /> Email</label>
           <input
             type="email"
             id="email"
-            className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring focus:ring-teal-300"
+            className=""
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
 
-        <div className="mb-4">
-          <label htmlFor="password" className="block text-gray-700 font-medium mb-1">
-            Password
-          </label>
+        <div className="mb-4 form">
+          <label htmlFor="password" className="label flex items-center gap-2"><Lock size={16} /> Password</label>
           <input
             type="password"
             id="password"
-            className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring focus:ring-teal-300"
+            className=""
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -77,19 +77,12 @@ export default function Login() {
         </div>
 
         <div className="flex justify-between text-sm mb-4">
-                <a>
-                    Belum punya akun?
-                <Link to="/register" className="text-teal-600 hover:underline">
-                    Register
-                </Link>
-            </a>
+          <div className="text-muted-2">Don't have an account yet?</div>
+          <Link to="/register" className="accent hover:underline text-blue-600">Register</Link>
         </div>
 
-        <button
-          type="submit"
-          className="bg-teal-600 text-white w-full py-2 rounded hover:bg-teal-700 transition"
-        >
-          Log in
+        <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
+          <LogIn size={16} /> Log in
         </button>
       </form>
     </div>
