@@ -68,7 +68,6 @@ export default function Tracking() {
   })
 
   if (loading) return <p className="text-muted">Loading sessions...</p>
-  // if (!sessions.length) return <p className="text-muted">No sessions found.</p>
 
   return (
     <div className="container">
