@@ -3,7 +3,7 @@
 // import { updateSession } from "../../../src/api/api"
 
 // Base URL API backend
-const BASE = import.meta.env.VITE_API_BASE || 'https://gym-track-backend.vercel.app/'
+const BASE = import.meta.env.VITE_API_BASE || 'https://gym-track-backend.vercel.app'
 
 async function request(path, opts = {}) {
   const token = localStorage.getItem('token')
