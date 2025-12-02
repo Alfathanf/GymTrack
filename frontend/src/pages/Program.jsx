@@ -68,7 +68,7 @@ export default function Tracking() {
   })
 
   if (loading) return <p className="text-muted">Loading sessions...</p>
-  if (!sessions.length) return <p className="text-muted">No sessions found.</p>
+  // if (!sessions.length) return <p className="text-muted">No sessions found.</p>
 
   return (
     <div className="container">
@@ -87,7 +87,9 @@ export default function Tracking() {
       <AddModal show={showModal} onClose={() => setShowModal(false)} onUpdate={loadData} />
 
       {/* Sessions List */}
-      {sortedSessions.map((s) => (
+      {sortedSessions.length === 0 ? (
+        <p className="text-muted">No tracked sessions yet.</p>
+      ) : (sortedSessions.map((s) => (
         <Card key={s.id} onClick={() => navigate(`/session/${s.id}`)} className="p-4 mb-3 card-ghost">
           <div className="flex justify-between items-center">
             <div>
@@ -118,7 +120,7 @@ export default function Tracking() {
             </div>
           </div>
         </Card>
-      ))}
+      )))}
     </div>
   )
 }
