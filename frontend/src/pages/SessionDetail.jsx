@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import EditModal from '../components/EditSessionModal'
 import { Plus, Trash2, Edit3, Dumbbell, ArrowRight } from "lucide-react"
-
 import Card from '../components/Card'
 import api from '../api/api'
 
 export default function SessionDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [showModal, setShowModal] = useState(false)
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
   const [allExercises, setAllExercises] = useState([]) // semua exercise user
@@ -81,9 +82,11 @@ export default function SessionDetail() {
           <div className="text-muted">{session.day_of_week} — {session.is_active ? 'Active' : 'Inactive'}</div>
         </div>
         <div className="flex items-center gap-3">
-          <button className="btn-primary" onClick={() => navigate(-1)}><ArrowRight size={16} /> Back</button>
+          <button onClick={() => setShowModal(true)} className="btn-primary"> Edit </button>
         </div>
       </div>
+
+      <EditModal show={showModal} onClose={() => setShowModal(false)} onUpdate={loadSession && loadAllExercises} />
 
       {/* Exercises */}
       {session.exercises?.length === 0 ? (
@@ -99,7 +102,7 @@ export default function SessionDetail() {
             </div>
 
             <div>
-              <button onClick={(ev) => { ev.stopPropagation(); handleRemoveExercise(e.id); }} className="btn-ghost">
+              <button onClick={(ev) => { ev.stopPropagation(); handleRemoveExercise(e.id); }} className="btn-red">
                 <Trash2 size={16} />
               </button>
             </div>
@@ -122,7 +125,7 @@ export default function SessionDetail() {
               </option>
             ))}
           </select>
-          <button type="submit" className="btn-primary flex items-center gap-2"><Plus size={16} /> Add</button>
+          <button type="submit" className="btn-primary flex items-center gap-2">Add</button>
         </form>
       </Card>
     </div>

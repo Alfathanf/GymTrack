@@ -78,7 +78,7 @@ exports.update = async (req, res) => {
 
     const { data, error } = await supabase
       .from('users')
-      .update({ name, height, weight })
+     .update({ name, height, weight })
       .eq('id', id)
       .select('id, email, name, height, weight, created_at')
 

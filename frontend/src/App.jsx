@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
+import Program from './pages/Program'
 import SessionDetail from './pages/SessionDetail'
 import Tracking from './pages/Tracking'
 import TrackingDetail from './pages/TrackingDetail'
@@ -54,6 +55,14 @@ export default function App() {
       element={
         <RequireAuth>
           <Home />
+        </RequireAuth>
+      }
+    />
+    <Route
+      path="/program"
+      element={
+        <RequireAuth>
+          <Program />
         </RequireAuth>
       }
     />

@@ -16,6 +16,8 @@ html, body, #root {
   --bg-color: #ffffff;
   --bg-elev: #f5f5f5;
   --card-color: #f0f0f0;
+  --warn: #ff0000;
+  --warn-hover: #d30000;
   --accent: #007BFF;
   --accent-hover: #0066d3;
   --text: #111111;
@@ -136,6 +138,21 @@ body {
 
 .btn-ghost:hover {
   background: var(--accent);
+  color: #ffffff;
+}
+
+.btn-red {
+  background: transparent;
+  color: var(--warn);
+  border: 1px solid var(--warn);
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.btn-red:hover {
+  background: var(--warn);
   color: #ffffff;
 }
 

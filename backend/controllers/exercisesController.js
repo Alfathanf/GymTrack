@@ -68,7 +68,7 @@ exports.update = async (req, res) => {
   try {
     const { id } = req.params
     const userId = req.user?.id
-    const { exercise_name, muscle_group } = req.body
+    const { exercise_name } = req.body
 
     // Verify ownership
     const { data: exercise, error: checkErr } = await supabase
@@ -87,7 +87,7 @@ exports.update = async (req, res) => {
 
     const { data, error } = await supabase
       .from('exercises')
-      .update({ exercise_name, muscle_group })
+      .update({ exercise_name })
       .eq('id', id)
       .select()
 

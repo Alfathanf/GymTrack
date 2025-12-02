@@ -1,6 +1,6 @@
 // src/api/api.js
 
-import { updateSession } from "../../../src/api/api"
+// import { updateSession } from "../../../src/api/api"
 
 // Base URL API backend
 const BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000'
@@ -36,6 +36,9 @@ export const api = {
   // users
   createUser: (payload) => request('/api/users', { method: 'POST', body: JSON.stringify(payload) }),
   updateUser: (id, payload) => request(`/api/users/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  uploadProfilePhoto: (formData) => request('/api/users/photo', formData, { headers: { 'Content-Type': 'multipart/form-data' }}),
+
+
 
   // programs (backend uses token to scope user)
   // getPrograms: () => request('/api/programs'),
@@ -46,8 +49,10 @@ export const api = {
   getSessions: () => request(`/api/sessions`),
   getTodaySession: () => request(`/api/sessions/today`),
   getDetailSession: (sessionId) => request(`/api/sessions/${sessionId}`),
-  deleteSession: (id) =>
-  request(`/api/sessions/${id}`, { method: 'DELETE' }),
+  deleteSession: (sessionid) =>
+  request(`/api/sessions/${sessionid}`, { method: 'DELETE' }),
+  updateSession: (sessionid, payload) =>
+  request(`/api/sessions/${sessionid}`, { method: 'PUT', body: JSON.stringify(payload) }),
   // createSession: (payload) => request('/api/sessions', { method: 'POST', body: JSON.stringify(payload) }),
 
   // exercises

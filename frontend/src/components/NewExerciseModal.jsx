@@ -17,7 +17,7 @@ export default function Modal({ show, onClose, onUpdate}) {
         const created = res.data || res
         setExercises(prev => [created, ...prev])
         setNewExerciseName('')
-        alert('Session created successfully!')
+        alert('Exercise created successfully!')
       if (onUpdate) onUpdate()
       onClose() // tutup modal setelah sukses
       } catch (err) {

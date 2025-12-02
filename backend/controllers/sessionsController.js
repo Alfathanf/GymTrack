@@ -19,7 +19,7 @@ exports.getAll = async (req, res) => {
       sessions.map(async (session) => {
         const { data: exercises, error: exErr } = await supabase
           .from('session_exercises')
-          .select('*, exercises(id, exercise_name, muscle_group)')
+          .select('*, exercises(id, exercise_name)')
           .eq('session_id', session.id)
 
         if (exErr) console.error(exErr)
@@ -92,7 +92,7 @@ exports.update = async (req, res) => {
   try {
     const { id } = req.params
     const userId = req.user?.id
-    const { day_of_week, is_active } = req.body
+    const { session_name, day_of_week, is_active } = req.body
 
     // Verify ownership
     const { data: session, error: checkErr } = await supabase
@@ -111,7 +111,7 @@ exports.update = async (req, res) => {
 
     const { data, error } = await supabase
       .from('sessions')
-      .update({ day_of_week, is_active })
+      .update({ session_name, day_of_week, is_active })
       .eq('id', id)
       .select()
 
@@ -171,7 +171,7 @@ exports.getToday = async (req, res) => {
       .maybeSingle()
 
     if (sessErr) return res.status(500).json({ success: false, error: sessErr.message })
-    if (!session) return res.status(404).json({ success: false, error: `No session found for ${today}` })
+    if (!session) return res.status(200).json({ success: false, error: `No session found for ${today}` })
 
     // ✅ gunakan alias relasi yang benar
     const { data: exercises, error: exErr } = await supabase

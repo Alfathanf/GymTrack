@@ -7,8 +7,8 @@ import { Plus } from 'lucide-react'
 // TrackingDetail — show table of tracking data with pagination
 export default function TrackingDetail() {
   const { exerciseId } = useParams()
-  
-    const [showModal, setShowModal] = useState(false)
+  // const { exercise, setExercise } = useState(null)
+  const [showModal, setShowModal] = useState(false)
   const [history, setHistory] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
@@ -18,10 +18,13 @@ export default function TrackingDetail() {
     loadHistory()
   }, [exerciseId])
 
-  async function loadHistory() {
+  async function loadHistory(exerciseName) {
   try {
     const res = await api.getTrackingByExercise(exerciseId)
     const list = res.data || [] // { success, data }
+    // const exerciseName = res.data    
+    // setExercise(exerciseName)
+    
 
     // 🔹 Urutkan dari tanggal terbaru -> terlama
     const sorted = list.sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -40,7 +43,7 @@ export default function TrackingDetail() {
   return (
     <div className="min-h-screen p-4 container">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="heading-0">Tracking Detail</h2>
+        <h2 className="heading-1">h</h2>
         <button onClick={() => setShowModal(true)} className="btn-primary">Add Track</button>
       </div>
 

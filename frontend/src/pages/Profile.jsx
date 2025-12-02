@@ -1,39 +1,17 @@
-import React, { useEffect, useState } from 'react'
-import { Plus, Trash2, Edit3, Dumbbell, LogOut } from "lucide-react"
+import React, { useEffect, useState, useRef } from 'react'
+import { Edit3, LogOut, Camera } from "lucide-react"
 import Card from '../components/Card'
-import AddModal from '../components/NewSessionModal'
 import EditModal from '../components/EditProfileModal'
-import api from '../api/api'
+import { api } from '../api/api'
 import { useNavigate } from 'react-router-dom'
 
 export default function Profile() {
   const [user, setUser] = useState(null)
-  const [showModal, setShowModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
-  const [sessions, setSessions] = useState([])
-  const [exercises, setExercises] = useState([])
   const [profileForm, setProfileForm] = useState({ email: '', height: '', weight: '' })
-  const [newSession, setNewSession] = useState({ session_name: '', day_of_week: '', exercise_ids: [] })
-  const [newExerciseName, setNewExerciseName] = useState('')
+  const [previewUrl, setPreviewUrl] = useState('')
+  const fileInputRef = useRef(null)
   const navigate = useNavigate()
-  // Urutan hari tetap
-  const dayOrder = [
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-    'saturday',
-    'sunday'
-  ] 
-
-// Urutkan sesi berdasarkan urutan hari
-const sortedSessions = [...sessions].sort((a, b) => {
-  const indexA = dayOrder.indexOf(a.day_of_week?.toLowerCase())
-  const indexB = dayOrder.indexOf(b.day_of_week?.toLowerCase())
-  return indexA - indexB
-})
-
 
   async function loadData() {
     try {
@@ -45,11 +23,7 @@ const sortedSessions = [...sessions].sort((a, b) => {
         height: u?.height || '',
         weight: u?.weight || ''
       })
-      const resSessions = await api.getSessions()
-      setSessions(resSessions?.data || resSessions || [])
-
-      const resExercises = await api.getExercises()
-      setExercises(resExercises?.data || resExercises || [])
+      setPreviewUrl(u?.photo_url || '') // jika ada foto tersimpan
     } catch (err) {
       console.error(err)
     }
@@ -59,118 +33,106 @@ const sortedSessions = [...sessions].sort((a, b) => {
     loadData()
   }, [])
 
-  // ✅ Toggle session per day — keep only one active per day
-  async function handleToggleActive(sessionId, currentState, dayOfWeek) {
+  // 📸 Handle upload foto profil
+  async function handleFileChange(e) {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('photo', file)
+
     try {
-      // 1️⃣ Matikan sesi lain di hari yang sama
-      const updatedSessions = await Promise.all(
-        sessions.map(async (s) => {
-          if (s.day_of_week === dayOfWeek && s.id !== sessionId && s.is_active) {
-            await api.updateSession(s.id, { is_active: false })
-            return { ...s, is_active: false }
-          }
-          return s
-        })
-      )
-
-      // 2️⃣ Toggle sesi yang ditekan
-      await api.updateSession(sessionId, { is_active: !currentState })
-
-      const newSessions = updatedSessions.map((s) =>
-        s.id === sessionId ? { ...s, is_active: !currentState } : s
-      )
-
-      setSessions(newSessions)
+      const res = await api.uploadProfilePhoto(formData)
+      if (res?.url) {
+        setPreviewUrl(res.url)
+        alert('Profile photo updated!')
+      }
     } catch (err) {
       console.error(err)
-      alert('Failed to toggle session')
+      alert('Failed to upload photo.')
     }
   }
 
-  async function handleRemoveSession(SessionId) {
-        if (!window.confirm('Remove this session?')) return
-        try {
-          await api.deleteSession(SessionId)
-          await loadData()
-        } catch (err) {
-          console.error(err)
-          alert('Failed to remove session')
-        }
-      }
-
   return (
     <div className="min-h-screen p-4 container">
-      <div className="flex items-center justify-between mb-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-10">
         <div>
-          <h2 className="heading-1">Your Profile</h2>
-          <div className="heading-2">Manage your profile and program</div>
+          <h2 className="heading-1">Profile</h2>
+          <div className="heading-2">Manage your profile</div>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="btn-ghost" onClick={() => { localStorage.removeItem('token'); window.location.href = '/login' }}>
-            <LogOut size={16} color={'#007BFF'} /> 
-          </button>
-        </div>
+        <button
+          className="btn-red"
+          onClick={() => {
+            localStorage.removeItem('token')
+            window.location.href = '/login'
+          }}
+        > Logout
+        </button>
       </div>
 
       {/* Profile Card */}
       {user ? (
-        <Card className="card">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="heading-2">{user.name}</div>
-              <div className="text-muted">Height: {user.height || '-'} cm • Weight: {user.weight || '-'} kg</div>
-              <div className="text-muted">{user.email}</div>
-            </div>
-            <div>
-              <button onClick={() => setShowEditModal(true)} className="btn-primary">
-                <Edit3 size={16} />
-              </button>
-            </div>
+        <Card className="relative flex flex-col items-center text-center p-6  ">
+          {/* Foto Profil */}
+          <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-blue-500 shadow-md -mt-12 bg-white">
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Profile"
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                No Photo
+              </div>
+            )}
+
+            {/* Tombol upload foto (ikon kamera di pojok bawah) */}
+            <button
+              onClick={() => fileInputRef.current.click()}
+              className="absolute bottom-1 right-1 bg-blue-500 text-white p-1.5 rounded-full shadow hover:bg-blue-600"
+            >
+              <Camera size={16} />
+            </button>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+
+          {/* Info User */}
+          <div className="mt-4 space-y-1">
+            <div className="heading-1">{user.name}</div>
+            <div className="text-muted">Email: {user.email}</div>
+            <div className="text-muted">Height: {user.height || '-'} cm</div>
+            <div className="text-muted">Weight: {user.weight || '-'} kg</div>
+          </div>
+
+          {/* Tombol Edit */}
+          <div className="mt-4">
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="btn-primary flex items-center gap-2"
+            >
+              <Edit3 size={16} /> Edit Profile
+            </button>
           </div>
         </Card>
       ) : (
         <p className="text-muted">No user data.</p>
       )}
 
-      {/* Sessions List header */}
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="heading-1">Your Program</h3>
-        <button onClick={() => setShowModal(true)} className="btn-primary"><Plus size={14} /></button>
-      </div>
-
-      <AddModal show={showModal} onClose={() => setShowModal(false)} onUpdate={loadData} />
-      <EditModal show={showEditModal} onClose={() => setShowEditModal(false)} onUpdate={loadData} user={user} />
-
-      {sortedSessions.map(s => (
-        <Card key={s.id} onClick={() => navigate(`/session/${s.id}`)} className="p-4 mb-3 card-ghost">
-          <div className="flex justify-between items-center">
-            <div>
-              <div className="font-medium">{s.session_name}</div>
-              <div className="text-muted capitalize">{s.day_of_week}</div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <label className="switch" onClick={(ev) => ev.stopPropagation()}>
-                <input
-                  type="checkbox"
-                  checked={!!s.is_active}
-                  onChange={() => handleToggleActive(s.id, s.is_active, s.day_of_week)}
-                />
-                <span className="slider"></span>
-              </label>
-
-              <button
-                onClick={(ev) => { ev.stopPropagation(); handleRemoveSession(s.id); }}
-                className="btn-ghost"
-                title="Remove session"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          </div>
-        </Card>
-      ))}
-
+      {/* Modal Edit */}
+      <EditModal
+        show={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onUpdate={loadData}
+        user={user}
+      />
     </div>
   )
 }

@@ -12,6 +12,9 @@ router.get('/:id', authenticateToken, usersController.getById)
 // POST create user (registration)
 router.post('/', usersController.create)
 
+// Update photo user
+router.post('/:id', authenticateToken, usersController.photo)
+
 // PUT update user (self only)
 router.put('/:id', authenticateToken, usersController.update)
 

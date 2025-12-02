@@ -67,11 +67,15 @@ export default function Tracking() {
         </div>
         
         {/* Tombol untuk membuka modal */}
-      <button
+      {/* <button
         onClick={() => setShowModal(true)}
       >
         <button className="btn-primary" onClick={() => {}}>Add Exercise</button>
-      </button>
+      </button> */}
+
+      <button onClick={() => setShowModal(true)} className="btn-primary">
+                      Add Exercise
+                    </button>
 
       {/* Modal */}
       <Modal show={showModal} onClose={() => setShowModal(false)} onUpdate={loadExercises} />
@@ -88,7 +92,7 @@ export default function Tracking() {
               </div>
               <button
                 onClick={(ev) => { ev.stopPropagation(); handleRemoveExercise(e.id); }}
-                className="btn-ghost"
+                className="btn-red"
               >
                 <Trash2 size={16} />
               </button>
