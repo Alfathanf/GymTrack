@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { LogIn, Mail, Lock, Loader2 } from 'lucide-react'
+import api from '../api/api'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -10,35 +11,33 @@ export default function Login() {
   const [isUploading, setIsUploading] = useState(false)
 
   const handleLogin = async (e) => {
-    e.preventDefault()
-    setError('')
+  e.preventDefault()
+  setError('')
 
-    try {
-      setIsUploading(true)
-      
-      const res = await fetch('https://gym-track-backend.vercel.app/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      })
+  try {
+    setIsUploading(true)
 
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.error || 'Login gagal')
-      }
+    // 🔹 panggil API login dari api.js
+    const data = await api.login({ email, password })
 
-      // Simpan token ke localStorage
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-
-      // Arahkan ke halaman utama
-      navigate('/')
-    } catch (err) {
-      setError(err.message || 'Terjadi kesalahan')
-    } finally {
-      setIsUploading(false) // ✅ selesai loading
+    // jika backend kirim { token, user }
+    if (!data?.token) {
+      throw new Error('Login gagal — token tidak ditemukan')
     }
+
+    // 🔹 simpan token & data user ke localStorage
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('user', JSON.stringify(data.user))
+
+    // 🔹 arahkan ke halaman utama
+    navigate('/')
+  } catch (err) {
+    console.error(err)
+    setError(err.message || 'Terjadi kesalahan saat login')
+  } finally {
+    setIsUploading(false) // ✅ selesai loading
   }
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center">

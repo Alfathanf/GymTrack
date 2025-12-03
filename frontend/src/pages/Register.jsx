@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { UserPlus, Mail, Lock, Loader2 } from 'lucide-react'
+import api from '../api/api'
 
 export default function Register() {
   const [name, setName] = useState('')
@@ -12,44 +13,43 @@ export default function Register() {
   const [isUploading, setIsUploading] = useState(false)
   const navigate = useNavigate()
 
-  const handleRegister = async (e) => {
-    e.preventDefault()
-    setError('')
+const handleRegister = async (e) => {
+  e.preventDefault()
+  setError('')
 
-    // ✅ Password validation
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/
-    if (!passwordRegex.test(password)) {
-      setError(
-        'Password must be at least 8 characters long and include at least 1 uppercase, 1 lowercase, 1 number, and 1 special character.'
-      )
-      return
-    }
-
-    try {
-      setIsUploading(true)
-      const res = await fetch('http://localhost:3000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, height, weight })
-      })
-
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.error || 'Registration failed')
-      }
-
-      // Simpan token ke localStorage
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-
-      // Arahkan ke halaman utama
-      navigate('/')
-    } catch (err) {
-      setError(err.message || 'An error occurred')
-    } finally {
-      setIsUploading(false) // ✅ selesai loading
-    }
+  // ✅ Validasi password
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/
+  if (!passwordRegex.test(password)) {
+    setError(
+      'Password must be at least 8 characters long and include at least 1 uppercase, 1 lowercase, 1 number, and 1 special character.'
+    )
+    return
   }
+
+  try {
+    setIsUploading(true)
+
+    // 🔹 panggil API register dari api.js
+    const data = await api.register({ name, email, password, height, weight })
+
+    if (!data?.token) {
+      throw new Error('Registration failed — token not found')
+    }
+
+    // 🔹 simpan token & user ke localStorage
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('user', JSON.stringify(data.user))
+
+    // 🔹 arahkan ke halaman utama
+    navigate('/')
+  } catch (err) {
+    console.error(err)
+    setError(err.message || 'An error occurred during registration')
+  } finally {
+    setIsUploading(false) // ✅ selesai loading
+  }
+}
+
 
   return (
     <div className="min-h-screen flex items-center justify-center">
