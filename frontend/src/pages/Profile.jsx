@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Edit3, LogOut, Camera } from "lucide-react"
+import { Edit3, LogOut, Camera, Loader2 } from "lucide-react"
 import Card from '../components/Card'
 import EditModal from '../components/EditProfileModal'
 import { api } from '../api/api'
@@ -10,6 +10,7 @@ export default function Profile() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [profileForm, setProfileForm] = useState({ email: '', height: '', weight: '' })
   const [previewUrl, setPreviewUrl] = useState('')
+  const [isUploading, setIsUploading] = useState(false) // ✅ state baru
   const fileInputRef = useRef(null)
   const navigate = useNavigate()
 
@@ -23,7 +24,7 @@ export default function Profile() {
         height: u?.height || '',
         weight: u?.weight || ''
       })
-      setPreviewUrl(u?.profile_image || '') // jika ada foto tersimpan
+      setPreviewUrl(u?.profile_image || '')
     } catch (err) {
       console.error(err)
     }
@@ -35,23 +36,26 @@ export default function Profile() {
 
   // 📸 Handle upload foto profil
   async function handleFileChange(e) {
-  const file = e.target.files[0]
-  if (!file) return
+    const file = e.target.files[0]
+    if (!file || isUploading) return // cegah klik ganda
 
-  const formData = new FormData()
-  formData.append('photo', file)
+    const formData = new FormData()
+    formData.append('photo', file)
 
-  try {
-    const res = await api.uploadProfilePhoto(formData)
-    if (res?.imageUrl) { // ✅ gunakan field imageUrl dari backend
-      setPreviewUrl(res.imageUrl)
-      alert('Profile photo updated!')
+    try {
+      setIsUploading(true) // ✅ mulai loading
+      const res = await api.uploadProfilePhoto(formData)
+      if (res?.imageUrl) {
+        setPreviewUrl(res.imageUrl)
+        alert('Profile photo updated!')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Failed to upload photo.')
+    } finally {
+      setIsUploading(false) // ✅ selesai loading
     }
-  } catch (err) {
-    console.error(err)
-    alert('Failed to upload photo.')
   }
-}
 
   return (
     <div className="min-h-screen p-4 container">
@@ -73,7 +77,7 @@ export default function Profile() {
 
       {/* Profile Card */}
       {user ? (
-        <Card className="relative flex flex-col items-center text-center p-6  ">
+        <Card className="relative flex flex-col items-center text-center p-6">
           {/* Foto Profil */}
           <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-blue-500 shadow-md -mt-12 bg-white">
             {previewUrl ? (
@@ -88,13 +92,21 @@ export default function Profile() {
               </div>
             )}
 
-            {/* Tombol upload foto (ikon kamera di pojok bawah) */}
+            {/* Tombol upload foto */}
             <button
-              onClick={() => fileInputRef.current.click()}
-              className="absolute bottom-1 right-1 bg-blue-500 text-white p-1.5 rounded-full shadow hover:bg-blue-600"
+              disabled={isUploading} // ✅ nonaktifkan saat upload
+              onClick={() => !isUploading && fileInputRef.current.click()}
+              className={`absolute bottom-1 right-1 p-1.5 rounded-full shadow text-white transition ${
+                isUploading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+              }`}
             >
-              <Camera size={16} />
+              {isUploading ? (
+                <Loader2 size={16} className="animate-spin" /> // ikon loading
+              ) : (
+                <Camera size={16} />
+              )}
             </button>
+
             <input
               type="file"
               accept="image/*"
