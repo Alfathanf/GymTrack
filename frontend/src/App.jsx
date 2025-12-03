@@ -35,15 +35,21 @@ export default function App() {
   return (
     <div className="app-container">
       {/* Header hanya muncul jika sudah login */}
-      {token && (
-        <header className="app-header">
-          <div className="container">
-            <Link to="/" className="heading-1 text-blue-600">
-              GymTrack
-            </Link>
-          </div>
-        </header>
-      )}
+{token && (
+  <header className="app-header">
+    <div className="">
+      <Link to="/" className="flex items-center gap-2">
+        <img
+          src="/LOGO_GYMTRACK.png" // 🔹 path relatif dari folder public
+          alt="GymTrack Logo"
+          className="w-100 h-10 object-contain"
+        />
+        <span className="heading-1 text-blue-600 font-bold">GymTrack</span>
+      </Link>
+    </div>
+  </header>
+)}
+
 
       <main className="app-main">
   <Routes>

@@ -2,23 +2,28 @@ const express = require('express')
 const router = express.Router()
 const usersController = require('../controllers/usersController')
 const { authenticateToken } = require('../middleware/authMiddleware')
+const upload = require('../middleware/upload') 
 
-// GET current user profile
+// =====================
+// 🧠 ROUTES USERS
+// =====================
+
+// GET all users
 router.get('/', authenticateToken, usersController.getAll)
 
-// GET single user (self only)
+// GET single user by ID
 router.get('/:id', authenticateToken, usersController.getById)
 
-// POST create user (registration)
+// POST create user (register)
 router.post('/', usersController.create)
 
-// Update photo user
-// router.post('/:id', authenticateToken, usersController.photo)
+// ✅ UPLOAD PHOTO (gunakan middleware upload dari Cloudinary)
+router.post('/upload-photo', authenticateToken, upload.single('photo'), usersController.uploadPhoto)
 
-// PUT update user (self only)
+// PUT update user data
 router.put('/:id', authenticateToken, usersController.update)
 
-// DELETE user (self only)
+// DELETE user
 router.delete('/:id', authenticateToken, usersController.delete)
 
 module.exports = router

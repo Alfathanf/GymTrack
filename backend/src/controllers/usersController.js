@@ -107,3 +107,37 @@ exports.delete = async (req, res) => {
     res.status(500).json({ success: false, error: err.message })
   }
 }
+
+// POST upload profile photo
+exports.uploadPhoto = async (req, res) => {
+  try {
+    const userId = req.user?.id
+    if (!userId)
+      return res.status(401).json({ success: false, error: 'Unauthorized' })
+
+    const imageUrl = req.file?.path
+    if (!imageUrl)
+      return res.status(400).json({ success: false, error: 'No image uploaded' })
+
+    const { data, error } = await supabase
+      .from('users')
+      .update({ profile_image: imageUrl })
+      .eq('id', userId)
+      .select('id, email, name, profile_image')
+
+    if (error)
+      return res.status(500).json({ success: false, error: error.message })
+
+    return res.json({
+      success: true,
+      message: 'Profile image uploaded successfully',
+      imageUrl,
+      data: data[0],
+    })
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ success: false, error: err.message })
+  }
+}
+
+

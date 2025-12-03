@@ -3,15 +3,20 @@
 // import { updateSession } from "../../../src/api/api"
 
 // Base URL API backend
-const BASE = import.meta.env.VITE_API_BASE || 'https://gym-track-backend.vercel.app'
+const BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000'
 
 async function request(path, opts = {}) {
   const token = localStorage.getItem('token')
 
+  // Buat headers dasar tanpa Content-Type dulu
   const headers = {
-    'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...opts.headers,
+  }
+
+  // 🧠 Jika body bukan FormData, baru set Content-Type JSON
+  if (!(opts.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json'
   }
 
   const res = await fetch(`${BASE}${path}`, {
@@ -27,6 +32,7 @@ async function request(path, opts = {}) {
   return res.status === 204 ? null : res.json()
 }
 
+
 export const api = {
   // auth
   getProfile: () => request('/api/auth/me'),
@@ -36,7 +42,12 @@ export const api = {
   // users
   createUser: (payload) => request('/api/users', { method: 'POST', body: JSON.stringify(payload) }),
   updateUser: (id, payload) => request(`/api/users/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
-  uploadProfilePhoto: (formData) => request('/api/users/photo', formData, { headers: { 'Content-Type': 'multipart/form-data' }}),
+  uploadProfilePhoto: (formData) =>
+  request('/api/users/upload-photo', {
+    method: 'POST',
+    body: formData, // ✅ kirim langsung FormData
+  }),
+
 
 
 
@@ -88,11 +99,6 @@ createExercise: (payload) =>
 getExercises: () => request('/api/exercises'),
 
 // session_exercises
-addSessionExercise: (payload) =>
-  request('/api/session_exercises', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  }),
   
 deleteSessionExercise: (id) =>
   request(`/api/session_exercises/${id}`, { method: 'DELETE' }),

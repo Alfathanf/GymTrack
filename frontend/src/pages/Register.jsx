@@ -15,6 +15,15 @@ export default function Register() {
     e.preventDefault()
     setError('')
 
+    // ✅ Password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/
+    if (!passwordRegex.test(password)) {
+      setError(
+        'Password must be at least 8 characters long and include at least 1 uppercase, 1 lowercase, 1 number, and 1 special character.'
+      )
+      return
+    }
+
     try {
       const res = await fetch('http://localhost:3000/api/auth/register', {
         method: 'POST',
@@ -24,7 +33,7 @@ export default function Register() {
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || 'Register gagal')
+        throw new Error(data.error || 'Registration failed')
       }
 
       // Simpan token ke localStorage
@@ -34,7 +43,7 @@ export default function Register() {
       // Arahkan ke halaman utama
       navigate('/')
     } catch (err) {
-      setError(err.message || 'Terjadi kesalahan')
+      setError(err.message || 'An error occurred')
     }
   }
 
@@ -61,15 +70,15 @@ export default function Register() {
             <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
         
-            <div className="form">
-              <label className="label">Height (cm)</label>
-              <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
-            </div>
+          <div className="form">
+            <label className="label">Height (cm)</label>
+            <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
+          </div>
             
-            <div className="form">
-              <label className="label">Weight (kg)</label>
-              <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} />
-            </div>
+          <div className="form">
+            <label className="label">Weight (kg)</label>
+            <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} />
+          </div>
 
           <div className="form">
             <label className="label flex items-center gap-2"><Mail size={14} /> Email</label>
@@ -79,11 +88,14 @@ export default function Register() {
           <div className="form">
             <label className="label flex items-center gap-2"><Lock size={14} /> Password</label>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <small className="text-muted text-xs">
+              Must contain at least 8 characters, 1 uppercase, 1 lowercase, 1 number, and 1 special character.
+            </small>
           </div>
         </div>
 
         <div className="flex justify-between text-sm mb-4">
-          <div className="text-muted-2">Already have an Account?</div>
+          <div className="text-muted-2">Already have an account?</div>
           <Link to="/login" className="accent hover:underline text-blue-600">Log in</Link>
         </div>
 

@@ -23,7 +23,7 @@ export default function Profile() {
         height: u?.height || '',
         weight: u?.weight || ''
       })
-      setPreviewUrl(u?.photo_url || '') // jika ada foto tersimpan
+      setPreviewUrl(u?.profile_image || '') // jika ada foto tersimpan
     } catch (err) {
       console.error(err)
     }
@@ -35,23 +35,23 @@ export default function Profile() {
 
   // 📸 Handle upload foto profil
   async function handleFileChange(e) {
-    const file = e.target.files[0]
-    if (!file) return
+  const file = e.target.files[0]
+  if (!file) return
 
-    const formData = new FormData()
-    formData.append('photo', file)
+  const formData = new FormData()
+  formData.append('photo', file)
 
-    try {
-      const res = await api.uploadProfilePhoto(formData)
-      if (res?.url) {
-        setPreviewUrl(res.url)
-        alert('Profile photo updated!')
-      }
-    } catch (err) {
-      console.error(err)
-      alert('Failed to upload photo.')
+  try {
+    const res = await api.uploadProfilePhoto(formData)
+    if (res?.imageUrl) { // ✅ gunakan field imageUrl dari backend
+      setPreviewUrl(res.imageUrl)
+      alert('Profile photo updated!')
     }
+  } catch (err) {
+    console.error(err)
+    alert('Failed to upload photo.')
   }
+}
 
   return (
     <div className="min-h-screen p-4 container">

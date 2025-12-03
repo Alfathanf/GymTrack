@@ -57,7 +57,7 @@ exports.me = async (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'Unauthorized' })
   // Optionally fetch fresh user data from DB
   const { id } = req.user
-  const { data, error } = await supabase.from('users').select('id,name,email,height,weight').eq('id', id).single()
+  const { data, error } = await supabase.from('users').select('id,name,email,height,weight,profile_image').eq('id', id).single()
   if (error) return res.status(500).json({ error: error.message })
   res.json({ user: data })
 }
