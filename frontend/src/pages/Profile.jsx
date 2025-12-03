@@ -65,7 +65,7 @@ export default function Profile() {
           className="btn-red"
           onClick={() => {
             localStorage.removeItem('token')
-            window.location.href = '/login'
+            window.location.href = '/'
           }}
         > Logout
         </button>
