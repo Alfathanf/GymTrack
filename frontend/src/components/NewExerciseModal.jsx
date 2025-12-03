@@ -28,7 +28,7 @@ export default function Modal({ show, onClose, onUpdate}) {
         alert('Failed to create Exercise')
       } finally {
       setIsUploading(false) // ✅ selesai loading
-    }
+      }
     }
 
   return (

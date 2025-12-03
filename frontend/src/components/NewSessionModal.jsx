@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { api } from '../api/api'
+import {  Loader2 } from "lucide-react"
 
 export default function Modal({ show, onClose, onUpdate }) {
   const [exercises, setExercises] = useState([])
   const [newExerciseName, setNewExerciseName] = useState('')
+  const [isUploading, setIsUploading] = useState(false)
   const [newSession, setNewSession] = useState({
     session_name: '',
     day_of_week: '',
@@ -26,8 +28,10 @@ export default function Modal({ show, onClose, onUpdate }) {
   // ✅ CREATE EXERCISE BARU SECARA INLINE
   async function handleCreateExerciseInline(e) {
     e.preventDefault()
+    if (!newExerciseName || isUploading) return
     if (!newExerciseName.trim()) return
     try {
+      setIsUploading(true)
       const res = await api.createExercise({ exercise_name: newExerciseName })
       const created = res.data || res
       setExercises(prev => [...prev, created]) // tambahkan ke daftar
@@ -36,16 +40,20 @@ export default function Modal({ show, onClose, onUpdate }) {
     } catch (err) {
       console.error(err)
       alert('Failed to create exercise')
+    } finally {
+      setIsUploading(false) // ✅ selesai loading
     }
   }
 
   // ✅ CREATE SESSION BARU
   async function handleCreateSession(e) {
     e.preventDefault()
+    if (!newSession || isUploading) return
     if (!newSession.day_of_week || !newSession.session_name) {
       return alert('Please enter session name and select day.')
     }
     try {
+      setIsUploading(true)
       const res = await api.createSession({
         session_name: newSession.session_name,
         day_of_week: newSession.day_of_week,
@@ -70,6 +78,8 @@ export default function Modal({ show, onClose, onUpdate }) {
     } catch (err) {
       console.error(err)
       alert('Failed to create session')
+    } finally {
+      setIsUploading(false) // ✅ selesai loading
     }
   }
 
@@ -156,16 +166,21 @@ export default function Modal({ show, onClose, onUpdate }) {
               className="p-2 border rounded flex-1"
             />
             <button
+              disabled={isUploading}
               type="button"
               onClick={handleCreateExerciseInline}
               className="btn-primary"
             >
-              Add
+              {isUploading ? (
+                <Loader2 size={16} className="animate-spin" /> // ikon loading
+              ) : "Add" }
             </button>
           </div>
 
-          <button className="bg-blue-600 text-white px-4 py-2 rounded w-full">
-            Create Session
+          <button disabled={isUploading} className="bg-blue-600 text-white px-4 py-2 rounded w-full">
+            {isUploading ? (
+                <Loader2 size={16} className="animate-spin" /> // ikon loading
+              ) : "Create Session" }
           </button>
         </form>
       </div>

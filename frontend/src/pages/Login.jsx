@@ -1,18 +1,21 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { LogIn, Mail, Lock } from 'lucide-react'
+import { LogIn, Mail, Lock, Loader2 } from 'lucide-react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const [isUploading, setIsUploading] = useState(false)
 
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
 
     try {
+      setIsUploading(true)
+      
       const res = await fetch('https://gym-track-backend.vercel.app/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -32,6 +35,8 @@ export default function Login() {
       navigate('/')
     } catch (err) {
       setError(err.message || 'Terjadi kesalahan')
+    } finally {
+      setIsUploading(false) // ✅ selesai loading
     }
   }
 
@@ -82,7 +87,9 @@ export default function Login() {
         </div>
 
         <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
-          <LogIn size={16} /> Log in
+          {isUploading ? (
+                <Loader2 size={16} className="animate-spin" /> // ikon loading
+              ) : (<LogIn size={16} /> ) } Log In
         </button>
       </form>
     </div>

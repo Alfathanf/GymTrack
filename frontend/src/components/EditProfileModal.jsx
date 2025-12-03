@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { api } from '../api/api'
+import {  Loader2 } from "lucide-react"
 
 export default function Modal({ show, onClose, onUpdate, user }) {
   const [profileForm, setProfileForm] = useState({ email: '', height: '', weight: '' })
+  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
     if (user && show) {
@@ -16,8 +18,10 @@ export default function Modal({ show, onClose, onUpdate, user }) {
 
   async function handleProfileSave(e) {
     e.preventDefault()
+    if (!user || isUploading) return
     if (!user) return
     try {
+      setIsUploading(true)
       await api.updateUser(user.id, profileForm)
       alert('Profile updated!')
       if (onUpdate) onUpdate()
@@ -25,6 +29,8 @@ export default function Modal({ show, onClose, onUpdate, user }) {
     } catch (err) {
       console.error(err)
       alert('Failed to update profile')
+    } finally {
+      setIsUploading(false) // ✅ selesai loading
     }
   }
 
@@ -68,7 +74,9 @@ export default function Modal({ show, onClose, onUpdate, user }) {
             />
           </div>
           <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded w-full">
-            Save Profile
+            {isUploading ? (
+                <Loader2 size={16} className="animate-spin" /> // ikon loading
+              ) : "Save Profile" }
           </button>
         </form>
       </div>

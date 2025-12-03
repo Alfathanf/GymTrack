@@ -1,16 +1,28 @@
 import React, { useEffect, useState } from 'react'
 import { api } from '../api/api'
+import { Loader2 } from "lucide-react"
 
-export default function Modal({ show, onClose, onUpdate }) {
+export default function EditSessionModal({ show, onClose, onUpdate, editData }) {
   const [exercises, setExercises] = useState([])
-  const [newExerciseName, setNewExerciseName] = useState('')
-  const [newSession, setNewSession] = useState({
+  const [isUploading, setIsUploading] = useState(false)
+  const [form, setForm] = useState({
     session_name: '',
     day_of_week: '',
     exercise_ids: []
   })
 
-  // ✅ LOAD EXERCISES KETIKA MODAL DIBUKA
+  // Prefill data dari session yang mau diedit
+  useEffect(() => {
+    if (editData) {
+      setForm({
+        session_name: editData.session_name || '',
+        day_of_week: editData.day_of_week || '',
+        exercise_ids: editData.exercise_ids || []
+      })
+    }
+  }, [editData])
+
+  // Ambil daftar exercise saat modal dibuka
   useEffect(() => {
     if (!show) return
     ;(async () => {
@@ -23,60 +35,49 @@ export default function Modal({ show, onClose, onUpdate }) {
     })()
   }, [show])
 
-  // ✅ CREATE EXERCISE BARU SECARA INLINE
-  async function handleCreateExerciseInline(e) {
-    e.preventDefault()
-    if (!newExerciseName.trim()) return
-    try {
-      const res = await api.createExercise({ exercise_name: newExerciseName })
-      const created = res.data || res
-      setExercises(prev => [...prev, created]) // tambahkan ke daftar
-      setNewExerciseName('')
-      alert('Exercise added!')
-    } catch (err) {
-      console.error(err)
-      alert('Failed to create exercise')
-    }
-  }
-
-  // ✅ UPDATE SESSION BARU
+  // 🔄 Update Session
   async function handleUpdateSession(e) {
     e.preventDefault()
-    if (!newSession.day_of_week || !newSession.session_name) {
-      return alert('Please enter session name and select day.')
+    if (!form.session_name || !form.day_of_week) {
+      return alert('Please fill in all required fields.')
     }
-    try {
-      const res = await api.updateSession({
-        session_name: newSession.session_name,
-        day_of_week: newSession.day_of_week,
-      })
-      const session = res.data || res
 
-      // Link exercises ke session baru
-      if (newSession.exercise_ids.length > 0) {
-        for (const exId of newSession.exercise_ids) {
-          await api.addSessionExercise({
-            session_id: session.id,
-            exercise_id: exId
-          })
-        }
+    if (!editData || !editData.id) {
+  alert('No session selected to edit!')
+  return
+}
+
+
+    try {
+      setIsUploading(true)
+      // Update session utama
+      await api.updateSession(editData.id, {
+        session_name: form.session_name,
+        day_of_week: form.day_of_week,
+      })
+
+      // (Opsional) Update hubungan exercises ↔ session jika diperlukan
+      if (form.exercise_ids.length > 0) {
+        await api.updateSessionExercises(editData.id, form.exercise_ids)
       }
 
-      setNewSession({ session_name: '', day_of_week: '', exercise_ids: [] })
       alert('Session updated successfully!')
       if (onUpdate) onUpdate()
-      onClose() // tutup modal setelah sukses
+      onClose()
     } catch (err) {
       console.error(err)
       alert('Failed to update session')
+    } finally {
+      setIsUploading(false)
     }
   }
 
   if (!show) return null
 
   return (
-<div className="modal-overlay">
-  <div className="modal-content">
+    <div className="modal-overlay">
+      <div className="modal-content relative">
+        {/* Tombol close */}
         <button
           onClick={onClose}
           className="absolute top-2 right-3 text-gray-500 hover:text-gray-700 text-xl"
@@ -86,27 +87,25 @@ export default function Modal({ show, onClose, onUpdate }) {
 
         <h3 className="font-semibold mb-2">Edit Session</h3>
 
-        <form onSubmit={handleUpdateSession} className="space-y-2">
+        <form onSubmit={handleUpdateSession} className="space-y-3">
+          {/* Nama Session */}
           <div>
             <label className="block text-sm">Session Name</label>
             <input
-              value={newSession.session_name}
-              onChange={e =>
-                setNewSession({ ...newSession, session_name: e.target.value })
-              }
+              value={form.session_name}
+              onChange={e => setForm({ ...form, session_name: e.target.value })}
               className="w-full p-2 border rounded"
-              placeholder="e.g., Pull Day"
+              placeholder="e.g., Push Day"
             />
           </div>
 
+          {/* Hari */}
           <div>
             <label className="block text-sm">Day of Week</label>
             <select
               className="w-full p-2 border rounded"
-              value={newSession.day_of_week}
-              onChange={e =>
-                setNewSession({ ...newSession, day_of_week: e.target.value })
-              }
+              value={form.day_of_week}
+              onChange={e => setForm({ ...form, day_of_week: e.target.value })}
             >
               <option value="">Select day</option>
               {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(
@@ -119,52 +118,17 @@ export default function Modal({ show, onClose, onUpdate }) {
             </select>
           </div>
 
-          {/* ✅ Dropdown exercises */}
-          <div>
-            <label className="block text-sm">Exercises</label>
-            <select
-              multiple
-              value={newSession.exercise_ids}
-              onChange={e =>
-                setNewSession({
-                  ...newSession,
-                  exercise_ids: Array.from(e.target.selectedOptions, o => o.value)
-                })
-              }
-              className="w-full p-2 border rounded"
-            >
-              {exercises.length === 0 ? (
-                <option disabled>No exercises found</option>
-              ) : (
-                exercises.map(ex => (
-                  <option key={ex.id} value={ex.id}>
-                    {ex.exercise_name}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-
-          {/* Inline Add Exercise */}
-          <div className="flex gap-2 items-center">
-            <input
-              type="text"
-              placeholder="Add new exercise"
-              value={newExerciseName}
-              onChange={e => setNewExerciseName(e.target.value)}
-              className="p-2 border rounded flex-1"
-            />
-            <button
-              type="button"
-              onClick={handleCreateExerciseInline}
-              className="btn-primary"
-            >
-              Add
-            </button>
-          </div>
-
-          <button className="bg-blue-600 text-white px-4 py-2 rounded w-full">
-            Create Session
+          {/* Tombol update */}
+          <button
+            type="submit"
+            disabled={isUploading}
+            className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+          >
+            {isUploading ? (
+              <Loader2 size={16} className="animate-spin inline-block" />
+            ) : (
+              'Edit Session'
+            )}
           </button>
         </form>
       </div>

@@ -68,6 +68,7 @@ export const api = {
 
   // exercises
   getExercises: (sessionId) => request('/api/exercises'),
+  getExerciseById: (id) => request(`/api/exercises/${id}`),
   createExercise: (payload) => request('/api/exercises', { method: 'POST', body: JSON.stringify(payload) }),
   updateExercise: (id, payload) => request(`/api/exercises/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
   deleteExercise: (id) =>
@@ -77,6 +78,9 @@ export const api = {
   createTracking: (payload) => request('/api/tracking', { method: 'POST', body: JSON.stringify(payload) }),
   getTrackingByExercise: (exerciseId) => request(`/api/tracking/${exerciseId}`),
   getAllTrackings: () => request('/api/tracking'),
+  updateTracking: (id, payload) => request(`/api/tracking/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  deleteTracking: (id) => request(`/api/tracking/${id}`, { method: 'DELETE' }),
+
 
   createSession: (payload) =>
   request('/api/sessions', {
@@ -99,7 +103,8 @@ createExercise: (payload) =>
 getExercises: () => request('/api/exercises'),
 
 // session_exercises
-  
+
+
 deleteSessionExercise: (id) =>
   request(`/api/session_exercises/${id}`, { method: 'DELETE' }),
 

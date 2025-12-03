@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { UserPlus, Mail, Lock } from 'lucide-react'
+import { UserPlus, Mail, Lock, Loader2 } from 'lucide-react'
 
 export default function Register() {
   const [name, setName] = useState('')
@@ -9,6 +9,7 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isUploading, setIsUploading] = useState(false)
   const navigate = useNavigate()
 
   const handleRegister = async (e) => {
@@ -25,6 +26,7 @@ export default function Register() {
     }
 
     try {
+      setIsUploading(true)
       const res = await fetch('http://localhost:3000/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -44,6 +46,8 @@ export default function Register() {
       navigate('/')
     } catch (err) {
       setError(err.message || 'An error occurred')
+    } finally {
+      setIsUploading(false) // ✅ selesai loading
     }
   }
 
@@ -100,7 +104,9 @@ export default function Register() {
         </div>
 
         <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
-          <UserPlus size={16} /> Register
+          {isUploading ? (
+                <Loader2 size={16} className="animate-spin" /> // ikon loading
+              ) : (<UserPlus size={16} /> ) } Register
         </button>
       </form>
     </div>

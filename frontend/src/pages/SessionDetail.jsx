@@ -8,11 +8,12 @@ import api from '../api/api'
 export default function SessionDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [showModal, setShowModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
   const [allExercises, setAllExercises] = useState([]) // semua exercise user
   const [selectedExercise, setSelectedExercise] = useState('') // id exercise yang dipilih
+  const [selectedSession, setSelectedSession] = useState(null)
 
   async function loadSession() {
     try {
@@ -70,6 +71,11 @@ export default function SessionDetail() {
   }
 }
 
+function handleEditSession(session) {
+    setSelectedSession(session)
+    setShowEditModal(true)
+  }
+
 
   if (loading) return <p className="text-muted">Loading...</p>
   if (!session) return <p className="text-muted">Session not found.</p>
@@ -82,11 +88,19 @@ export default function SessionDetail() {
           <div className="text-muted">{session.day_of_week} — {session.is_active ? 'Active' : 'Inactive'}</div>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => setShowModal(true)} className="btn-primary"> Edit </button>
+          <button onClick={() => handleEditSession(session)} className="btn-primary"> Edit </button>
         </div>
       </div>
 
-      <EditModal show={showModal} onClose={() => setShowModal(false)} onUpdate={loadSession && loadAllExercises} />
+      <EditModal
+              show={showEditModal}
+              onClose={() => setShowEditModal(false)}
+              onUpdate={() => {
+                loadSession()
+                loadAllExercises()
+              }}
+              editData={selectedSession}
+            />
 
       {/* Exercises */}
       {session.exercises?.length === 0 ? (
