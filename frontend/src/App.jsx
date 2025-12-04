@@ -10,6 +10,8 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import BottomNav from './components/BottomNav'
 import RequireAuth from './components/RequireAuth'
+import PublicOnlyRoute from './components/PublicOnlyRoute'
+
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('token'))
@@ -53,8 +55,22 @@ export default function App() {
 
       <main className="app-main">
   <Routes>
-    <Route path="/login" element={<Login />} />
-    <Route path="/register" element={<Register />} />
+    <Route
+    path="/login"
+    element={
+      <PublicOnlyRoute>
+        <Login />
+      </PublicOnlyRoute>
+    }
+  />
+  <Route
+    path="/register"
+    element={
+      <PublicOnlyRoute>
+        <Register />
+      </PublicOnlyRoute>
+    }
+  />
 
     <Route
       path="/"

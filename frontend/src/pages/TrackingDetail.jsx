@@ -80,14 +80,7 @@ export default function TrackingDetail() {
 
       {/* Modal */}
       <Modal show={showModal} onClose={() => setShowModal(false)} onUpdate={loadHistory} />
-      <EditModal
-  show={showEditModal}
-  onClose={() => setShowEditModal(false)}
-  onUpdate={loadHistory}
-  editData={selectedTracking}
-/>
-
-
+      <EditModal show={showEditModal} onClose={() => setShowEditModal(false)} onUpdate={loadHistory} editData={selectedTracking} />
 
       {/* Table */}
       <div className="table-card mb-4">
